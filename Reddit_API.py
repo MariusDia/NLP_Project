@@ -78,7 +78,7 @@ class Submission:
             if not(isinstance(comment, MoreComments)) and ('I am a bot' not in comment.body):
                 self.comments.append(Comment(comment))
                 i+=1
-            if i>comLimit:
+            if i>=comLimit:
                 break
             
             
@@ -94,7 +94,7 @@ class SubmissionCollection:
         for submission in reddit.subreddit(subReddit).search(query):
             self.submissions.append(Submission(submission, comLimit))
             i+=1
-            if i>subLimit:
+            if i>=subLimit:
                 break
             
         #Text processing (tokenization and stopword removal)
@@ -193,17 +193,6 @@ print(subCommentCount)
 print("\n")
 
 
-#Doc counting reshaping for histogram
-'''def reshaping(dict1, dict2):
-    for key in dict1.keys():
-        if key not in dict2.keys():
-            dict2[key]=0
-    for key in dict2.keys():
-        if key not in dict1.keys():
-            dict1[key]=0'''
-            
-
-
 #List of word counting dictionaries for every comments of first submission
 def getSubCommentsWordCounting(subColl, subNum, wordLimit):
     comWordCountList =[]
@@ -223,15 +212,17 @@ print("\n")
 #Histogram drawing of one sub and its comments 
 def subCommentsHisto(subWordCount, comWordCountList):
     #♣Figure initialization
+    #Sublopts count = comments count
     fig, axs = plt.subplots(len(comWordCountList))
     fig.suptitle('Stacked subplots, submission counting/comment counting')
     i=0
     #Sub plots input
     for comCount in comWordCountList:
-        if comCount>0:
-            axs[i].bar(list(subWordCount.keys()), subWordCount.values(), color='b')
-            axs[i].bar(list(comCount.keys()), comCount.values(), color='g')
-            i+=1
+        print(str(i) + "  " + str(len(comWordCountList)))
+        axs[i].bar(list(subWordCount.keys()), subWordCount.values(), color='b')
+        axs[i].bar(list(comCount.keys()), comCount.values(), color='g')
+        i+=1
+        
         
         
 print("Drawing articles/comments histograms ...\n")
@@ -241,7 +232,9 @@ subWordLimit=10
 comWordLimit=10
 for subNum in range(len(subColl.submissions)):
     comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
-    if len(comWordCountList)>0:
+    if len(comWordCountList)<5:
+        print("not much comments on this post : " + subColl.submissions[subNum].title)
+    if len(comWordCountList)>1:
         subWordCount = getSubWordCounting2(subColl, subNum, subWordLimit)
         subCommentsHisto(subWordCount,comWordCountList)
     else:
