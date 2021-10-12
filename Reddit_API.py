@@ -141,8 +141,24 @@ subColl = main()
 
 #----------------Word counting-----------------
 
-#Most common words sorting (first submission title)
-def getSubWordCounting2(subColl, subNum, wordLimit):
+def getSubWordCounting(subColl, subNum, wordLimit=10):
+    '''
+
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+    subNum : int
+        index of the Submission in subColl.
+    wordLimit : int, optional
+        Number limit of words (the 'wordLimit' most common word) . The default is 10.
+
+    Returns a dictionary of the "wordLimit" most common words in a submission article 
+    -------
+    subWordCount : dict
+        A dictionary of the "wordLimit" most common words in a submission article.
+
+    '''
     subWordCount = {}
     
     #Getting word counting
@@ -162,14 +178,27 @@ def getSubWordCounting2(subColl, subNum, wordLimit):
             
     return subWordCount
 
-subWordCount =  getSubWordCounting2(subColl, 0, 10)
-print("Word Counting of submission's article content")
-print(subWordCount)
-print("\n")
 
+def getCommentWordCounting(subColl, subNum, comNum, wordLimit=10):
+    '''
 
-#Most common words sorting (submission comment)
-def getCommentWordCounting(subColl, subNum, comNum, wordLimit):
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+    subNum : int
+        index of the Submission in subColl.
+    comNum : int
+        index of the comment in the Submission comments list.
+    wordLimit : int, optional
+        Number limit of words (the 'wordLimit' most common word) . The default is 10.
+
+    Returns a dictionary of the "wordLimit" most common words in a comment 
+    -------
+    subCommentCount : dict
+        A dictionary of the "wordLimit" most common words in a comment.
+
+    '''
     subCommentCount = {}
     
     #Getting word counting
@@ -186,31 +215,91 @@ def getCommentWordCounting(subColl, subNum, comNum, wordLimit):
         subCommentCount.popitem()
     return subCommentCount
 
-comNum=0
-subCommentCount = getCommentWordCounting(subColl,0 , comNum, 10)
-print("Word Counting of submission's " + str(comNum+1) + "th comment")
-print(subCommentCount)
-print("\n")
-
 
 #List of word counting dictionaries for every comments of first submission
-def getSubCommentsWordCounting(subColl, subNum, wordLimit):
+def getSubCommentsWordCounting(subColl, subNum, wordLimit=10):
+    '''
+
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+    subNum : int
+        index of the Submission in subColl.
+    wordLimit : int, optional
+        Number limit of words (the 'wordLimit' most common word) . The default is 10.
+
+    Returns a list of 
+    -------
+    comWordCountList : list 
+        List of dictionaries of the "wordLimit" most common words of every chosen comments of a submission.
+
+    '''
+    
     comWordCountList =[]
     sub = subColl.submissions[subNum]
     for i in range(len(sub.comments)):
         comWordCountList.append(getCommentWordCounting(subColl,subNum, i, wordLimit))
     return comWordCountList
 
-wordLimit=5
-comWordCountList = getSubCommentsWordCounting(subColl, 0, wordLimit)
-for l in comWordCountList:
-    print(l)
-print("\n")
+def getMergedComWordCount(subColl, subNum, wordLimit=20):
+    '''
+    
+
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+    subNum : int
+        index of the Submission in subColl.
+    wordLimit : int, optional
+        Number limit of words (the 'wordLimit' most common word) . The default is 20.
+
+    Returns
+    -------
+    mergedComWordCount : TYPE
+        DESCRIPTION.
+
+    '''
+    mergedComWordCount = {}
+    for sub in subColl.submissions:
+        for com in sub.comments:
+            for word in com.body.split():
+                if word not in mergedComWordCount.keys():
+                    mergedComWordCount[word] = 1
+                else:
+                    mergedComWordCount[word] += 1
+    #Sorting and taking only 100 most common words of the first comment
+    mergedComWordCount =  {k: v for k, v in sorted(mergedComWordCount.items(), key=lambda item: item[1], reverse=True)}
+    for i in range(len(mergedComWordCount)-wordLimit):
+        mergedComWordCount.popitem()
+    
+    return mergedComWordCount
+
+#mergedComWordCount = getMergedComWordCount(subColl, 0)
+#print(mergedComWordCount)
 
 #-------------------Histograms of word counting----------------
 
-#Histogram drawing of one sub and its comments 
-def subCommentsHisto(subWordCount, comWordCountList):
+
+
+#Histogram drawing of Word Overlapping for a sub and its comments separated
+
+def separateSubCommentsHist(subWordCount, comWordCountList):
+    '''
+
+    Parameters
+    ----------
+    subWordCount : dict
+        A dictionary of the "wordLimit" most common words in a submission article.
+    comWordCountList : list
+        List of dictionaries of the "wordLimit" most common words of every chosen comments of a submission.
+
+    Draws an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS
+    -------
+    None.
+
+    '''
     #♣Figure initialization
     #Sublopts count = comments count
     fig, axs = plt.subplots(len(comWordCountList))
@@ -224,20 +313,88 @@ def subCommentsHisto(subWordCount, comWordCountList):
         i+=1
         
         
-        
-print("Drawing articles/comments histograms ...\n")
-#subCommentsHisto(subWordCount,comWordCountList)
+def separateOverlapSubCommentHists(subColl, subWordLimit, comWordLimit):
+    '''
+
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+    subWordLimit : int
+        Select the 'subWordLimit' most common words of SUBMISSION.
+    comWordLimit : int
+        Select the 'comWordLimit' most common words of COMMENTs.
+
+    Draws X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS
+    -------
+    None.
+
+    '''
+    for subNum in range(len(subColl.submissions)):
+        comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
+        if len(comWordCountList)<5:
+            print("not much comments on this post : " + subColl.submissions[subNum].title)
+        if len(comWordCountList)>1:
+            subWordCount = getSubWordCounting(subColl, subNum, subWordLimit)
+            separateSubCommentsHist(subWordCount,comWordCountList)
+        else:
+            print("No comments ? " + str(subColl.submissions[subNum].title))
+
+
+
+
+#Histogram drawing of Word Overlapping for a sub and its comments separated7
 
 subWordLimit=10
 comWordLimit=10
-for subNum in range(len(subColl.submissions)):
-    comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
-    if len(comWordCountList)<5:
-        print("not much comments on this post : " + subColl.submissions[subNum].title)
-    if len(comWordCountList)>1:
-        subWordCount = getSubWordCounting2(subColl, subNum, subWordLimit)
-        subCommentsHisto(subWordCount,comWordCountList)
-    else:
-        print("No comments ? " + str(subColl.submissions[subNum].title))
-    
+def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
+    '''
+
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+    subWordLimit : int, optional
+        Select the 'subWordLimit' most common words of SUBMISSION. The default is 10
+    comWordLimit : int, optional
+        Select the 'comWordLimit' most common words of COMMENTs. The default is 10
+
+    Draws X histograms of word overlapping of EVERY SUBMISSION and EVERY one of their COMMENTS
+    -------
+    None.
+
+    '''
+    for i in range(len(subColl.submissions)):
+        mergedComWordCount = getMergedComWordCount(subColl, i, subWordLimit)
+        subWordCounting = getSubWordCounting(subColl, i, comWordLimit)
+        
+        fig, axs = plt.subplots()
+        
+        axs.bar(list(subWordCounting.keys()), subWordCounting.values(), color='g', label='Article Word Counting')
+        axs.bar(list(mergedComWordCount.keys()), mergedComWordCount.values(), color='b', label='Comments Word Counting')
+
+
+'''subWordCount =  getSubWordCounting(subColl, 0)
+print("Word Counting of submission's article content")
+print(subWordCount)
+print("\n")
+
+comNum=0
+subCommentCount = getCommentWordCounting(subColl,0 , comNum)
+print("Word Counting of submission's " + str(comNum+1) + "th comment")
+print(subCommentCount)
+print("\n")'''
+
+'''wordLimit=10
+comWordCountList = getSubCommentsWordCounting(subColl, 0, wordLimit)
+
+subWordLimit=10
+comWordLimit=10
+print("Drawing (separate comments) articles/comments histograms ...\n")
+separateOverlapSubCommentHists(subColl, subWordLimit, comWordLimit)'''
+
+print("Drawing (separate comments) articles/comments histograms ...\n")
+mixedOverlapSubCommentHists(subColl)
+
+
     
