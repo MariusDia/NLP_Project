@@ -28,7 +28,7 @@ class Article:
 
         res = requests.get(url)
         soup = BeautifulSoup(res.text)
-        self.content = preProcess(soup.get_text().strip())
+        self.content= preProcess(soup.get_text().strip())
 
 
 # Simplified version of praw Submission class model
@@ -69,7 +69,7 @@ class SubmissionCollection:
         # Text processing (tokenization and stopword removal)
         # Submission title processing
         for sub in self.submissions:
-            sub.title = preProcess(sub.title)
+            sub.title= preProcess(sub.title)
             # Comments content processing
             for comment in sub.comments:
                 comment.body = preProcess(comment.body)

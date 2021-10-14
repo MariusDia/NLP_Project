@@ -5,6 +5,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.snowball import SnowballStemmer
 
+
 # Text processing (tokenization, stop words removal)
 def preProcess(doc):
     Stopwords = list(set(nltk.corpus.stopwords.words('english')))
@@ -22,4 +23,3 @@ def preProcess(doc):
         Tokens.extend(words)
 
     return ' '.join(Tokens)
-

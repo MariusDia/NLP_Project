@@ -125,12 +125,13 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
                 mergedComWordCount[word] = 1
             else:
                 mergedComWordCount[word] += 1
-    #Sorting and taking only 100 most common words of the first comment
-    mergedComWordCount =  {k: v for k, v in sorted(mergedComWordCount.items(), key=lambda item: item[1], reverse=True)}
-    for _ in range(len(mergedComWordCount)-wordLimit):
+    # Sorting and taking only 100 most common words of the first comment
+    mergedComWordCount = {k: v for k, v in sorted(mergedComWordCount.items(), key=lambda item: item[1], reverse=True)}
+    for _ in range(len(mergedComWordCount) - wordLimit):
         mergedComWordCount.popitem()
-    
+
     return mergedComWordCount
+
 
 def calculateJacquard(subColl):
     '''
@@ -160,3 +161,7 @@ def calculateJacquard(subColl):
 
         coefficients.append(len(commonWords) / len(distinctWords))
     return coefficients
+
+
+def calculateJacquard(l1, l2):
+    return l1 / l2
