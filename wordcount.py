@@ -66,7 +66,7 @@ def getCommentWordCounting(subColl, subNum, comNum, wordLimit=10):
 
     # Sorting and taking only 100 most common words of the first comment
     subCommentCount = {k: v for k, v in sorted(subCommentCount.items(), key=lambda item: item[1], reverse=True)}
-    for i in range(len(subCommentCount) - wordLimit):
+    for _ in range(len(subCommentCount) - wordLimit):
         subCommentCount.popitem()
     return subCommentCount
 
@@ -100,7 +100,7 @@ def getSubCommentsWordCounting(subColl, subNum, wordLimit=10):
 
 def getMergedComWordCount(subColl, subNum, wordLimit=20):
     '''
-
+    
 
     Parameters
     ----------
@@ -118,23 +118,6 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
 
     '''
     mergedComWordCount = {}
-    for sub in subColl.submissions:
-        for com in sub.comments:
-            for word in com.body.split():
-                if word not in mergedComWordCount.keys():
-                    mergedComWordCount[word] = 1
-                else:
-                    mergedComWordCount[word] += 1
-    # Sorting and taking only 100 most common words of the first comment
-    mergedComWordCount = {k: v for k, v in sorted(mergedComWordCount.items(), key=lambda item: item[1], reverse=True)}
-    for i in range(len(mergedComWordCount) - wordLimit):
-        mergedComWordCount.popitem()
-
-    return mergedComWordCount
-
-
-def getSubMergedComWordCount(subColl, subNum, wordLimit=20):
-    mergedComWordCount = {}
     sub = subColl.submissions[subNum]
     for com in sub.comments:
         for word in com.body.split():
@@ -142,19 +125,32 @@ def getSubMergedComWordCount(subColl, subNum, wordLimit=20):
                 mergedComWordCount[word] = 1
             else:
                 mergedComWordCount[word] += 1
-
-    mergedComWordCount = {k: v for k, v in sorted(mergedComWordCount.items(), key=lambda item: item[1], reverse=True)}
-    for i in range(len(mergedComWordCount) - wordLimit):
+    #Sorting and taking only 100 most common words of the first comment
+    mergedComWordCount =  {k: v for k, v in sorted(mergedComWordCount.items(), key=lambda item: item[1], reverse=True)}
+    for _ in range(len(mergedComWordCount)-wordLimit):
         mergedComWordCount.popitem()
-
+    
     return mergedComWordCount
 
-
 def calculateJacquard(subColl):
+    '''
+    
+
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+
+    Returns
+    -------
+    coefficients : list
+        A list of of Jaccard indexes between a submission article and its comments.
+
+    '''
     coefficients = []
     for i in range(len(subColl.submissions)):
         subWords = list(getSubWordCounting(subColl, i, 20).keys())
-        subComWords = list(getSubMergedComWordCount(subColl, i, 20).keys())
+        subComWords = list(getMergedComWordCount(subColl, i, 20).keys())
 
         print(subWords)
         print(subComWords)

@@ -1,5 +1,11 @@
-# Histogram drawing of Word Overlapping for a sub and its comments separated
+import numpy as np
+import matplotlib.pyplot as plt
 
+from wordcount import getSubCommentsWordCounting
+from wordcount import getSubWordCounting
+from wordcount import getMergedComWordCount
+
+# Histogram drawing of Word Overlapping for a sub and its comments separated
 def separateSubCommentsHist(subWordCount, comWordCountList):
     '''
 
@@ -28,17 +34,17 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
         i += 1
 
 
-def separateOverlapSubCommentHists(subColl, subWordLimit, comWordLimit):
+def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     '''
 
     Parameters
     ----------
     subColl : SubmissionCollection
         A Submission Collection listing every submission and its attributes.
-    subWordLimit : int
-        Select the 'subWordLimit' most common words of SUBMISSION.
-    comWordLimit : int
-        Select the 'comWordLimit' most common words of COMMENTs.
+    subWordLimit : int, optional
+        Select the 'subWordLimit' most common words of SUBMISSION. The default is 10
+    comWordLimit : int, optional
+        Select the 'comWordLimit' most common words of COMMENTs. The default is 10
 
     Draws X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS
     -------
@@ -56,12 +62,7 @@ def separateOverlapSubCommentHists(subColl, subWordLimit, comWordLimit):
             print("No comments ? " + str(subColl.submissions[subNum].title))
 
 
-# Histogram drawing of Word Overlapping for a sub and its comments separated7
-
-subWordLimit = 10
-comWordLimit = 10
-
-
+# Histogram drawing of Word Overlapping for a sub and its comments separate
 def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     '''
 
@@ -82,8 +83,14 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     for i in range(len(subColl.submissions)):
         mergedComWordCount = getMergedComWordCount(subColl, i, subWordLimit)
         subWordCounting = getSubWordCounting(subColl, i, comWordLimit)
-
+        
         fig, axs = plt.subplots()
-
+        
         axs.bar(list(subWordCounting.keys()), subWordCounting.values(), color='g', label='Article Word Counting')
         axs.bar(list(mergedComWordCount.keys()), mergedComWordCount.values(), color='b', label='Comments Word Counting')
+
+        axs.set_ylabel("Word occuring count")
+        axs.set_xlabel("Word")
+        axs.set_title("Mixed Word Overlaps between Submission and most common words of its Comments")
+        
+        axs.legend()
