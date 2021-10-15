@@ -2,9 +2,9 @@
 
 import time
 
-from class_architecture import SubmissionCollection
+from class_architecture import PreProcessSubmissionCollection, SentenceProcessSubmissionCollection, SubmissionCollection
 
-from wordcount import calculateJacquard
+from wordcount import calculateJacquard, pearsonCorrelation
 
 from histograms import separateOverlapSubCommentHists
 from histograms import mixedOverlapSubCommentHists
@@ -30,29 +30,37 @@ def main():
         
         start_time = time.time()
         subColl = SubmissionCollection(subLimit,comLimit, query, subReddit)
+        #subCollPreProcess = PreProcessSubmissionCollection(subColl)
+        #subCollSentenceProcess = SentenceProcessSubmissionCollection(subColl)
+        subCollPreProcess = PreProcessSubmissionCollection(subLimit,comLimit, query, subReddit)
+        subCollSentenceProcess = SentenceProcessSubmissionCollection(subLimit,comLimit, query, subReddit)
         print("Execution time for " + str(subLimit) + " submissions, with " + str(comLimit) + " comments each : " + str((time.time() - start_time)) + " seconds\n")
         
-        print("List of averge comment's length per submission : " + str(subColl.getCommentLengthAverage()) + "\n")
+        print("List of averge comment's length per submission : " + str(subCollPreProcess.getCommentLengthAverage()) + "\n")
         
         #Subloop, what to display (histogram mixed/seperate histogram)
         #while(True):
         print("Now, what to display ?\n")
-        mode = input("Histogram (type 'hist'), Jaccard indexes (type 'jacc'), others?, or to stop the display loop, type 'stop'")
+        mode = input("Histogram (type 'hist'), Jaccard indexes (type 'jacc'), Pearson correlation (type 'pears') others?, or to stop the display loop, type 'stop'")
         if mode == "hist":
             sepMix = input("Seperate or Mixed Word Overlap (s/m)")
                 
             if sepMix=="s":
                 print("Drawing (comments words are separeted) articles/comments histograms ...\n")
-                separateOverlapSubCommentHists(subColl)
+                separateOverlapSubCommentHists(subCollPreProcess)
             elif sepMix=="m":
                 print("Drawing (comments words are mixed) articles/comments histograms ...\n")
-                mixedOverlapSubCommentHists(subColl)
+                mixedOverlapSubCommentHists(subCollPreProcess)
                 time.sleep(1.0)
                 
         elif mode=="jacc":
             print("Jaccard index :\n")
-            print(calculateJacquard(subColl))
-                    
+            print(calculateJacquard(subCollPreProcess))
+
+        elif mode=="pears":
+            print("Pearson correlation :\n")
+            print(pearsonCorrelation(subCollSentenceProcess))
+
         elif mode=="stop":
             pass
             #break

@@ -23,3 +23,7 @@ def preProcess(doc):
 
     return ' '.join(Tokens)
 
+def sentenceProcess(doc):
+    sentences = sent_tokenize(doc)
+    return sentences
+

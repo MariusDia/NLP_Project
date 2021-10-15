@@ -1,3 +1,9 @@
+import os
+from sentistrength import PySentiStr
+from text_process import sentenceProcess
+from scipy import stats
+import numpy as np
+
 def getSubWordCounting(subColl, subNum, wordLimit=10):
     '''
 
@@ -135,7 +141,6 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
 def calculateJacquard(subColl):
     '''
     
-
     Parameters
     ----------
     subColl : SubmissionCollection
@@ -160,3 +165,46 @@ def calculateJacquard(subColl):
 
         coefficients.append(len(commonWords) / len(distinctWords))
     return coefficients
+
+def pearsonCorrelation(subColl):
+    '''
+    
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+
+    Returns
+    -------
+    
+
+    '''
+    senti = PySentiStr()
+    curr_dir = os.getcwd()
+    senti.setSentiStrengthPath(str(curr_dir) + '\SentiStrengthCom.jar')
+    senti.setSentiStrengthLanguageFolderPath(str(curr_dir) + '\SentStrength_Data_Sept2011\\')
+    sentiScore = []
+    pearson = []
+    nullScore = (0, 0)
+    for sub in subColl.submissions:
+        article = sub.article.content
+        allcomments = ""
+        for comment in sub.comments:
+            allcomments += str(comment.body)
+        sentiArticles = senti.getSentiment(article, score="dual")
+        sentiComments = senti.getSentiment(allcomments, score="dual")
+        if len(sentiComments) < len(sentiArticles):
+            for i in range(len(sentiComments), len(sentiArticles), 1):
+                sentiComments.append(nullScore)
+        elif len(sentiComments) > len(sentiArticles):
+            for i in range(len(sentiArticles), len(sentiComments), 1):
+                sentiArticles.append(nullScore)
+        print(len(sentiArticles))
+        print(len(sentiComments))
+        sentiScore.append(sentiArticles)
+        sentiScore.append(sentiComments)
+        print(sentiArticles)
+        print(sentiComments)
+        print(stats.pearsonr(sentiArticles, sentiComments))
+        pearson.append(stats.pearsonr(sentiArticles, sentiComments))
+    return pearson
