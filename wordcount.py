@@ -183,28 +183,26 @@ def pearsonCorrelation(subColl):
     curr_dir = os.getcwd()
     senti.setSentiStrengthPath(str(curr_dir) + '\SentiStrengthCom.jar')
     senti.setSentiStrengthLanguageFolderPath(str(curr_dir) + '\SentStrength_Data_Sept2011\\')
-    sentiScore = []
     pearson = []
     nullScore = (0, 0)
     for sub in subColl.submissions:
         article = sub.article.content
-        allcomments = ""
+        allcomments = ''
+        sentiArticles = []
+        sentiComments = []
         for comment in sub.comments:
             allcomments += str(comment.body)
         sentiArticles = senti.getSentiment(article, score="dual")
-        sentiComments = senti.getSentiment(allcomments, score="dual")
+        if allcomments == '':
+            for i in range(len(sentiArticles)):
+                sentiComments.append(nullScore)
+        else:
+            sentiComments = senti.getSentiment(allcomments, score="dual")
         if len(sentiComments) < len(sentiArticles):
             for i in range(len(sentiComments), len(sentiArticles), 1):
                 sentiComments.append(nullScore)
         elif len(sentiComments) > len(sentiArticles):
             for i in range(len(sentiArticles), len(sentiComments), 1):
                 sentiArticles.append(nullScore)
-        print(len(sentiArticles))
-        print(len(sentiComments))
-        sentiScore.append(sentiArticles)
-        sentiScore.append(sentiComments)
-        print(sentiArticles)
-        print(sentiComments)
-        print(stats.pearsonr(sentiArticles, sentiComments))
-        pearson.append(stats.pearsonr(sentiArticles, sentiComments))
+        pearson.append(stats.pearsonr(np.array(sentiArticles).reshape(len(sentiArticles)*2,), np.array(sentiComments).reshape(len(sentiComments)*2,)))
     return pearson
