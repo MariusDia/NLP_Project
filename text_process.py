@@ -13,13 +13,13 @@ def preProcess(doc):
     WN_lemmatizer = WordNetLemmatizer()
 
     sentences = sent_tokenize(doc)
-    Tokens = []
+    tokens = []
     for sentence in sentences:
         words = word_tokenize(sentence)
         words = [stemmer.stem(word) for word in words]
         words = [WN_lemmatizer.lemmatize(word, pos="v") for word in words]
 
         words = [word for word in words if word.isalpha() and word not in Stopwords]  # get rid of numbers and Stopwords
-        Tokens.extend(words)
+        tokens.extend(words)
 
-    return ' '.join(Tokens)
+    return sentences,tokens,' '.join(tokens)

@@ -21,7 +21,7 @@ def getSubWordCounting(subColl, subNum, wordLimit=10):
     # Getting word counting
     sub = subColl.submissions[subNum]
 
-    for word in sub.article.content.split():
+    for word in sub.article.split():
         if word not in subWordCount.keys():
             subWordCount[word] = 1
         else:
@@ -58,7 +58,7 @@ def getCommentWordCounting(subColl, subNum, comNum, wordLimit=10):
     subCommentCount = {}
 
     # Getting word counting
-    for word in subColl.submissions[subNum].comments[comNum].body.split():
+    for word in subColl.submissions[subNum].comments[comNum].split():
         if word not in subCommentCount.keys():
             subCommentCount[word] = 1
         else:
@@ -120,7 +120,7 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
     mergedComWordCount = {}
     sub = subColl.submissions[subNum]
     for com in sub.comments:
-        for word in com.body.split():
+        for word in com.split():
             if word not in mergedComWordCount.keys():
                 mergedComWordCount[word] = 1
             else:

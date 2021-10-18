@@ -3,7 +3,7 @@ from wordcount import *
 import gensim
 from gensim import corpora
 from nltk.tokenize import sent_tokenize, word_tokenize
-from class_architecture import Comment
+
 
 def performLDA(subColl, NUM_TOPICS=3, ):
     jc = []
