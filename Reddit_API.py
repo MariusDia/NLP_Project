@@ -57,7 +57,7 @@ def main():
             print("Jaccard index :\n")
             print(calculateJacquard(subColl))
         elif mode == 'lda':
-            performLDA(subColl, 3)
+            print(performLDA(subColl, 3))
 
         elif mode == "stop":
             pass

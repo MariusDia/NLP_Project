@@ -135,7 +135,7 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
 
 def calculateJacquard(subColl):
     '''
-    
+
 
     Parameters
     ----------
@@ -153,15 +153,25 @@ def calculateJacquard(subColl):
         subWords = list(getSubWordCounting(subColl, i, 20).keys())
         subComWords = list(getMergedComWordCount(subColl, i, 20).keys())
 
-        print(subWords)
-        print(subComWords)
-
-        commonWords = list(set(subWords).intersection(subComWords))
-        distinctWords = list(set(subWords + subComWords))
-
-        coefficients.append(len(commonWords) / len(distinctWords))
+        coefficients.append(jacquardCoeff(subWords,subComWords))
     return coefficients
 
 
-def calculateJacquard(l1, l2):
-    return l1 / l2
+def jacquardCoeff(l1, l2):
+    '''
+
+
+    Parameters
+    ----------
+    l1,l2 : lists
+        The two vector for which the j.c. is calculated
+
+    Returns
+    -------
+    double
+    The j.c. value calculated on the lists
+
+    '''
+    commonWords = list(set(l1).intersection(l2))
+    distinctWords = list(set(l1 + l2))
+    return len(commonWords)/len(distinctWords)
