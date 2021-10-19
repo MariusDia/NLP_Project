@@ -1,6 +1,6 @@
 import os
 from sentistrength import PySentiStr
-from text_process import sentenceProcess
+from text_process import preProcess
 from scipy import stats
 import numpy as np
 
@@ -211,7 +211,7 @@ def pearsonCorrelation(subColl):
         
         allcomments = subColl.submissions[0].raw_comments
         for com in allcomments:
-            com = sentenceProcess(com)
+            com = preProcess(com)[0]
         allcomments = " ".join(allcomments)
         
         sentiArticles = senti.getSentiment(article, score="dual")

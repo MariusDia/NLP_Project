@@ -7,8 +7,6 @@ from class_architecture import SubmissionCollection
 from wordcount import calculateJacquard
 from wordcount import pearsonCorrelation
 
-from text_process import sentenceProcess
-
 from histograms import separateOverlapSubCommentHists
 from histograms import mixedOverlapSubCommentHists
 from LDA import performLDA
