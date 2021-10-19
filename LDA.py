@@ -1,14 +1,14 @@
-
+from text_process import preProcess
 from wordcount import *
 import gensim
 from gensim import corpora
 from nltk.tokenize import sent_tokenize, word_tokenize
-from class_architecture import Comment
+
 
 def performLDA(subColl, NUM_TOPICS=3, ):
     jc = []
     for sub in subColl.submissions:
-        article_text_data = [word_tokenize(sub.article.content)]
+        article_text_data = [preProcess(sub.raw_article)[1]]
         dictionary = corpora.Dictionary(article_text_data)
         corpus = [dictionary.doc2bow(text) for text in article_text_data]
         ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
@@ -18,9 +18,8 @@ def performLDA(subColl, NUM_TOPICS=3, ):
             article_topic_words = article_topic_words.union(set([t[0] for t in topic[1]]))
 
         comments_text_data = []
-        for comment in sub.comments:
-            body = comment.body
-            comments_text_data.append(word_tokenize(body))
+        for comment in sub.raw_comments:
+            comments_text_data.append(preProcess(comment)[1])
         dictionary = corpora.Dictionary(comments_text_data)
         corpus = [dictionary.doc2bow(text) for text in comments_text_data]
         ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)

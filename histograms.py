@@ -16,11 +16,12 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
     comWordCountList : list
         List of dictionaries of the "wordLimit" most common words of every chosen comments of a submission.
 
-    Draws an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS
+    Return an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS
     -------
-    None.
+    Return an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS.
 
     '''
+
     # ♣Figure initialization
     # Sublopts count = comments count
     fig, axs = plt.subplots(len(comWordCountList))
@@ -32,7 +33,8 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
         axs[i].bar(list(subWordCount.keys()), subWordCount.values(), color='b')
         axs[i].bar(list(comCount.keys()), comCount.values(), color='g')
         i += 1
-
+    plt.xticks(rotation=30, ha='right')
+    return fig
 
 def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     '''
@@ -48,18 +50,22 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
 
     Draws X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS
     -------
-    None.
+     Return X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS.
 
     '''
+    figList = []
     for subNum in range(len(subColl.submissions)):
         comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
         if len(comWordCountList) < 5:
             print("not much comments on this post : " + subColl.submissions[subNum].title)
+            return "Not much comments"
         if len(comWordCountList) > 1:
             subWordCount = getSubWordCounting(subColl, subNum, subWordLimit)
-            separateSubCommentsHist(subWordCount, comWordCountList)
+            figList.append(separateSubCommentsHist(subWordCount, comWordCountList))
         else:
             print("No comments ? " + str(subColl.submissions[subNum].title))
+            return "No comments"
+    return figList
 
 
 # Histogram drawing of Word Overlapping for a sub and its comments separate
@@ -80,6 +86,7 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     None.
 
     '''
+    figList = []
     for i in range(len(subColl.submissions)):
         mergedComWordCount = getMergedComWordCount(subColl, i, subWordLimit)
         subWordCounting = getSubWordCounting(subColl, i, comWordLimit)
@@ -91,6 +98,9 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
 
         axs.set_ylabel("Word occuring count")
         axs.set_xlabel("Word")
-        axs.set_title("Mixed Word Overlaps between Submission and most common words of its Comments")
+        axs.set_title("Mixed Word Overlaps between Submission and\n most common words of its Comments")
         
         axs.legend()
+        plt.xticks(rotation=30, ha='right')
+        figList.append(fig)
+    return figList

@@ -1,3 +1,9 @@
+import os
+from sentistrength import PySentiStr
+from text_process import sentenceProcess
+from scipy import stats
+import numpy as np
+
 def getSubWordCounting(subColl, subNum, wordLimit=10):
     '''
 
@@ -21,7 +27,7 @@ def getSubWordCounting(subColl, subNum, wordLimit=10):
     # Getting word counting
     sub = subColl.submissions[subNum]
 
-    for word in sub.article.content.split():
+    for word in sub.article.split():
         if word not in subWordCount.keys():
             subWordCount[word] = 1
         else:
@@ -58,7 +64,7 @@ def getCommentWordCounting(subColl, subNum, comNum, wordLimit=10):
     subCommentCount = {}
 
     # Getting word counting
-    for word in subColl.submissions[subNum].comments[comNum].body.split():
+    for word in subColl.submissions[subNum].comments[comNum].split():
         if word not in subCommentCount.keys():
             subCommentCount[word] = 1
         else:
@@ -120,7 +126,7 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
     mergedComWordCount = {}
     sub = subColl.submissions[subNum]
     for com in sub.comments:
-        for word in com.body.split():
+        for word in com.split():
             if word not in mergedComWordCount.keys():
                 mergedComWordCount[word] = 1
             else:
@@ -175,3 +181,53 @@ def jacquardCoeff(l1, l2):
     commonWords = list(set(l1).intersection(l2))
     distinctWords = list(set(l1 + l2))
     return len(commonWords)/len(distinctWords)
+
+
+
+
+def pearsonCorrelation(subColl):
+    '''
+    
+    Parameters
+    ----------
+    subColl : SubmissionCollection
+        A Submission Collection listing every submission and its attributes.
+
+    Returns
+    -------
+
+    '''
+    
+    senti = PySentiStr()
+    curr_dir = os.getcwd()
+    senti.setSentiStrengthPath(str(curr_dir) + '\SentiStrengthCom.jar')
+    senti.setSentiStrengthLanguageFolderPath(str(curr_dir) + '\SentStrength_Data_Sept2011\\')
+    pearson = []
+    nullScore = (0, 0)
+    for sub in subColl.submissions:
+        article = sub.raw_article
+        sentiArticles = []
+        sentiComments = []
+        
+        allcomments = subColl.submissions[0].raw_comments
+        for com in allcomments:
+            com = sentenceProcess(com)
+        allcomments = " ".join(allcomments)
+        
+        sentiArticles = senti.getSentiment(article, score="dual")
+        
+        if allcomments == '':
+            for i in range(len(sentiArticles)):
+                sentiComments.append(nullScore)
+        else:
+            sentiComments = senti.getSentiment(allcomments, score="dual")
+            
+        if len(sentiComments) < len(sentiArticles):
+            for i in range(len(sentiComments), len(sentiArticles), 1):
+                sentiComments.append(nullScore)
+        elif len(sentiComments) > len(sentiArticles):
+            for i in range(len(sentiArticles), len(sentiComments), 1):
+                sentiArticles.append(nullScore)
+                
+        pearson.append(stats.pearsonr(np.array(sentiArticles).reshape(len(sentiArticles)*2,), np.array(sentiComments).reshape(len(sentiComments)*2,)))
+    return pearson
