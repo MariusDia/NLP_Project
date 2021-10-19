@@ -86,6 +86,7 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     None.
 
     '''
+    figList = []
     for i in range(len(subColl.submissions)):
         mergedComWordCount = getMergedComWordCount(subColl, i, subWordLimit)
         subWordCounting = getSubWordCounting(subColl, i, comWordLimit)
@@ -100,5 +101,6 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
         axs.set_title("Mixed Word Overlaps between Submission and\n most common words of its Comments")
         
         axs.legend()
-    plt.xticks(rotation=30, ha='right')
-    return fig
+        plt.xticks(rotation=30, ha='right')
+        figList.append(fig)
+    return figList
