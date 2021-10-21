@@ -321,6 +321,7 @@ class Gui(QMainWindow):
                self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar1a)
 
                histMix = mixedOverlapSubCommentHists(subColl)
+               print("je fais les mix")
                self.histoMix.setText("The mixed histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of a histogram selecting words of every comment of a single submission.<br>")
                self.histoMix.setFont(QFont("Calibri", 14))
                self.histoMix.setStyleSheet("color:white;")
@@ -332,6 +333,7 @@ class Gui(QMainWindow):
                self.scrollBar2.verticalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
                self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar2)
                for fig in histMix:
+                  print(fig)
                   self.contentLayout2a.addWidget(self.createLabelFromFigure(fig))
                self.contentLayout2a.setSizeConstraint(3)
                self.scrollBar2a = self.scrollAreaToLayout(self.contentLayout2a)
@@ -434,6 +436,7 @@ class Gui(QMainWindow):
       return self.comboSubReddit.currentText()
 
    def figureToQImage(self, fig):
+      print(type(fig))
       canvas = FigureCanvas(fig)
       canvas.draw()
       size = canvas.size()

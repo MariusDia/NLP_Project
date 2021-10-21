@@ -119,6 +119,6 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
                                                 , legend=True
                                                 , rot=30)
         
-        figList.append(fig)
+        figList.append(fig.get_figure())
         
     return figList
