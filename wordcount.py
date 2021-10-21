@@ -193,7 +193,7 @@ def pearsonCorrelation(subColl):
     subColl : SubmissionCollection
         A Submission Collection listing every submission and its attributes.
 
-    Returns
+    Returns the statistical correlation between sentiment associated to original document
     -------
 
     '''

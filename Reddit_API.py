@@ -9,6 +9,7 @@ from wordcount import pearsonCorrelation
 
 from histograms import separateOverlapSubCommentHists
 from histograms import mixedOverlapSubCommentHists
+
 from LDA import performLDA
 
 
@@ -89,23 +90,23 @@ def main():
 # main()
 
 subLimit=1
-comLimit=30
+comLimit=10
 query="industrial farming"
 subReddit="environment"
 print("Processing submission collection... \n\n")
 subColl = SubmissionCollection(subLimit, comLimit, query, subReddit)
 
-#☻print("Drawing separate histogram")
-#separateOverlapSubCommentHists(subColl)
+print("Drawing separate histogram")
+separateOverlapSubCommentHists(subColl)
 
-"""print("Drawing mixed histogram\n\n")
+print("Drawing mixed histogram\n\n")
 mixedOverlapSubCommentHists(subColl)
 
-print("Jaccard index :\n\n")
+'''print("Jaccard index :\n\n")
 print(calculateJacquard(subColl))
 
 print("LDA model\n\n")
-print(performLDA(subColl, 3))"""
+print(performLDA(subColl, 3))
 
 print("Pearson\n\n")
-print(pearsonCorrelation(subColl))
+print(pearsonCorrelation(subColl))'''

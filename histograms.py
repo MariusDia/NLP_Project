@@ -1,11 +1,11 @@
-import numpy as np
+#import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd 
 
 from wordcount import getSubCommentsWordCounting
 from wordcount import getSubWordCounting
 from wordcount import getMergedComWordCount
 
-# Histogram drawing of Word Overlapping for a sub and its comments separated
 def separateSubCommentsHist(subWordCount, comWordCountList):
     '''
 
@@ -16,24 +16,32 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
     comWordCountList : list
         List of dictionaries of the "wordLimit" most common words of every chosen comments of a submission.
 
-    Return an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS
+    Returns an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS
     -------
-    Return an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS.
+    Returns an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS.
 
     '''
 
     # ♣Figure initialization
-    # Sublopts count = comments count
-    fig, axs = plt.subplots(len(comWordCountList))
-    fig.suptitle('Stacked subplots, submission counting/comment counting')
+    fig, axs = plt.subplots(nrows = len(comWordCountList))
+    fig.suptitle("Word occurences of a submission's linked article and its first comments, seperated for each comment")
     i = 0
+    
     # Sub plots input
-    for comCount in comWordCountList:
-        print(str(i) + "  " + str(len(comWordCountList)))
-        axs[i].bar(list(subWordCount.keys()), subWordCount.values(), color='b')
-        axs[i].bar(list(comCount.keys()), comCount.values(), color='g')
+    for comWordCount in comWordCountList:
+        
+        #Putting word counts in a dictionary
+        totalWordCount = {}
+        totalWordCount["Art."] = subWordCount
+        totalWordCount["Com."] = comWordCount
+        
+        #Putting the previous dictionary into a dataframe which plots a histogram of word counts
+        df = pd.DataFrame(totalWordCount)
+        df.plot(ax=axs[i]
+                , kind='bar'
+                , rot=30)
         i += 1
-    plt.xticks(rotation=30, ha='right')
+
     return fig
 
 def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
@@ -50,21 +58,28 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
 
     Draws X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS
     -------
-     Return X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS.
+    Returns X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS.
 
     '''
     figList = []
     for subNum in range(len(subColl.submissions)):
         comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
-        if len(comWordCountList) < 5:
+        
+        #notify if not much comments
+        if len(comWordCountList) < 3:
             print("not much comments on this post : " + subColl.submissions[subNum].title)
             return "Not much comments"
-        if len(comWordCountList) > 1:
+        
+        #Drawing histograms if there is at least two comments
+        if len(comWordCountList) > 2:
             subWordCount = getSubWordCounting(subColl, subNum, subWordLimit)
             figList.append(separateSubCommentsHist(subWordCount, comWordCountList))
+            
+        #Nothing if there is no comments
         else:
             print("No comments ? " + str(subColl.submissions[subNum].title))
             return "No comments"
+        
     return figList
 
 
@@ -83,24 +98,27 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
 
     Draws X histograms of word overlapping of EVERY SUBMISSION and EVERY one of their COMMENTS
     -------
-    None.
+    Returns X histograms of word overlapping of EVERY SUBMISSION and EVERY one of their COMMENTS.
 
     '''
+    
     figList = []
     for i in range(len(subColl.submissions)):
-        mergedComWordCount = getMergedComWordCount(subColl, i, subWordLimit)
+        #Getting word counting of article and comments
         subWordCounting = getSubWordCounting(subColl, i, comWordLimit)
+        mergedComWordCount = getMergedComWordCount(subColl, i, subWordLimit)
         
-        fig, axs = plt.subplots()
+        #Putting word counts in a dictionary
+        totalWordCount = {}
+        totalWordCount["Article Word Counting (total counting: "+ str(sum(subWordCounting.values())) +" )"] = subWordCounting
+        totalWordCount["Comments Word Counting (total counting: "+ str(sum(mergedComWordCount.values())) +" )"] = mergedComWordCount
         
-        axs.bar(list(subWordCounting.keys()), subWordCounting.values(), color='g', label='Article Word Counting')
-        axs.bar(list(mergedComWordCount.keys()), mergedComWordCount.values(), color='b', label='Comments Word Counting')
-
-        axs.set_ylabel("Word occuring count")
-        axs.set_xlabel("Word")
-        axs.set_title("Mixed Word Overlaps between Submission and\n most common words of its Comments")
+        #Putting the previous dictionary into a dtaframe which plots a histogram of word counts
+        fig = pd.DataFrame(totalWordCount).plot(kind='bar'
+                                                , title="Word occurences of a submission's linked article and its " + str(len(subColl.submissions[i].comments)) + " first comments, all comments' words are mixed"
+                                                , legend=True
+                                                , rot=30)
         
-        axs.legend()
-        plt.xticks(rotation=30, ha='right')
         figList.append(fig)
+        
     return figList
