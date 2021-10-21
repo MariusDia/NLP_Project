@@ -59,6 +59,14 @@ class SubmissionCollection:
                 comment.body = preProcess(comment.body)"""
 
     def getCommentLengthAverage(self):
+        '''
+
+        Returns a list of average of the comments' length of each submission
+        -------
+        comLengthList : list of int
+            a list of average of the comments' length of each submission.
+
+        '''
         comLengthList = []
         for sub in self.submissions:
             comLengthSum = 0
