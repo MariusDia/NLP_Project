@@ -90,17 +90,19 @@ def main():
 # main()
 
 subLimit=1
-comLimit=10
-query="industrial farming"
-subReddit="environment"
+comLimit=20
+query="greta"
+subReddit="news"
 print("Processing submission collection... \n\n")
 subColl = SubmissionCollection(subLimit, comLimit, query, subReddit)
 
-print("Drawing separate histogram")
-separateOverlapSubCommentHists(subColl)
 
-print("Drawing mixed histogram\n\n")
-mixedOverlapSubCommentHists(subColl)
+print('pearson')
+print(pearsonCorrelation(subColl))
+#print("Drawing separate histogram")
+#separateOverlapSubCommentHists(subColl)
+#print("Drawing mixed histogram\n\n")
+#mixedOverlapSubCommentHists(subColl)
 
 '''print("Jaccard index :\n\n")
 print(calculateJacquard(subColl))

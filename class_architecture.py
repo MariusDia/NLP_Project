@@ -22,14 +22,15 @@ class SimpleSubmission():
         self.title = pSubmission.title
         self.url = pSubmission.url
         self.is_self = pSubmission.is_self
-        self.raw_comments = [c.body for c in pSubmission.comments.list()[0:com_limit]]
+        self.raw_comments = [c.body for c in sorted(pSubmission.comments.list(), key= lambda c: c.score, reverse=True)[0:com_limit]]
         self.raw_article = self.get_raw_article()
         self.comments = [preProcess(c)[2] for c in self.raw_comments if ('I am a bot' not in c)]
         self.article = preProcess(self.raw_article)[2]
+        self.comments_doc= "".join(self.raw_comments)
 
     def get_raw_article(self):
         res = requests.get(self.url)
-        soup = BeautifulSoup(res.text)
+        soup = BeautifulSoup(res.text,features="html.parser")
         return soup.get_text().strip()
 
 
@@ -43,8 +44,8 @@ class SubmissionCollection:
         # setting submissions in the collection
         i = 0
         for submission in reddit.subreddit(subReddit).search(query):
-            if not submission.is_self and submission.num_comments > 0:
-                submission.comments.replace_more(limit=0)
+            if not submission.is_self and submission.num_comments > 15 and not submission.is_video:
+                submission.comments.replace_more(limit=None)
                 self.submissions.append(SimpleSubmission(submission, comLimit))
                 i += 1
                 if i >= subLimit:

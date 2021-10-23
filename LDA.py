@@ -17,9 +17,10 @@ def performLDA(subColl, NUM_TOPICS=3, ):
         for topic in article_topics:
             article_topic_words = article_topic_words.union(set([t[0] for t in topic[1]]))
 
-        comments_text_data = []
+        """comments_text_data = []
         for comment in sub.raw_comments:
-            comments_text_data.append(preProcess(comment)[1])
+            comments_text_data.append(preProcess(comment)[1])"""
+        comments_text_data= [preProcess(sub.comments_doc)[1]]
         dictionary = corpora.Dictionary(comments_text_data)
         corpus = [dictionary.doc2bow(text) for text in comments_text_data]
         ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
