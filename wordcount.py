@@ -213,7 +213,7 @@ def pearsonCorrelation(subColl):
         for com in allcomments:
             com = preProcess(com)[0]
         """
-        all_comments = preProcess(sub.comments_doc)
+        all_comments = preProcess(sub.comments_doc)[0]
         
         sentiArticles = senti.getSentiment(article, score="dual")
         

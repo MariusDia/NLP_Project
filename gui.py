@@ -323,7 +323,7 @@ class Gui(QMainWindow):
          else:
             #Get the results of the query
             subColl = SubmissionCollection(submission, comments, query, subReddit)
-
+            
             #Get the list of the separated histograms
             histSep = separateOverlapSubCommentHists(subColl)
 
