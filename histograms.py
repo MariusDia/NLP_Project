@@ -24,7 +24,7 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
 
     # ♣Figure initialization
     fig, axs = plt.subplots(nrows = len(comWordCountList))
-    fig.suptitle("Word occurences of a submission's linked article and its first comments, seperated for each comment")
+    fig.suptitle("Word occurences of a submission's linked article and its first comments,\nseperated for each comment")
     i = 0
     
     # Sub plots input
@@ -66,12 +66,12 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
         comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
         
         #notify if not much comments
-        if len(comWordCountList) < 3:
+        if len(comWordCountList) < 5:
             print("not much comments on this post : " + subColl.submissions[subNum].title)
             return "Not much comments"
         
-        #Drawing histograms if there is at least two comments
-        if len(comWordCountList) > 2:
+        #Drawing histograms if there is at least five comments
+        if len(comWordCountList) > 4:
             subWordCount = getSubWordCounting(subColl, subNum, subWordLimit)
             figList.append(separateSubCommentsHist(subWordCount, comWordCountList))
             
@@ -115,10 +115,10 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
         
         #Putting the previous dictionary into a dtaframe which plots a histogram of word counts
         fig = pd.DataFrame(totalWordCount).plot(kind='bar'
-                                                , title="Word occurences of a submission's linked article and its " + str(len(subColl.submissions[i].comments)) + " first comments, all comments' words are mixed"
+                                                , title="Word occurences of a submission's linked article and its " + str(len(subColl.submissions[i].comments)) + " first comments,\nall comments' words are mixed"
                                                 , legend=True
                                                 , rot=30)
         
-        figList.append(fig)
+        figList.append(fig.get_figure())
         
     return figList
