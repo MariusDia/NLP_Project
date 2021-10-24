@@ -40,7 +40,10 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
         df.plot(ax=axs[i]
                 , kind='bar'
                 , rot=30)
+        
         i += 1
+        if i>=5:
+            break
 
     return fig
 
