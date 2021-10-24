@@ -6,7 +6,7 @@ from wordcount import getSubCommentsWordCounting
 from wordcount import getSubWordCounting
 from wordcount import getMergedComWordCount
 
-def separateSubCommentsHist(subWordCount, comWordCountList):
+def separateSubCommentsHist(subWordCount, comWordCountList, comLimit=5):
     '''
 
     Parameters
@@ -23,7 +23,12 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
     '''
 
     # ♣Figure initialization
-    fig, axs = plt.subplots(nrows = len(comWordCountList))
+    if comLimit<len(comWordCountList):
+        nrows_p = comLimit
+    else:
+        nrows_p = len(comWordCountList)
+        
+    fig, axs = plt.subplots(nrows = nrows_p)
     fig.suptitle("Word occurences of a submission's linked article and its first comments,\nseperated for each comment")
     i = 0
     
@@ -47,7 +52,7 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
 
     return fig
 
-def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10, comLimit=5):
+def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     '''
 
     Parameters
@@ -65,7 +70,7 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10, co
 
     '''
     figList = []
-    for subNum in range(comLimit):
+    for subNum in range(len(subColl.submissions)):
         comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
         
         #notify if not much comments
