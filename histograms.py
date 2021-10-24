@@ -47,7 +47,7 @@ def separateSubCommentsHist(subWordCount, comWordCountList):
 
     return fig
 
-def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
+def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10, comLimit=5):
     '''
 
     Parameters
@@ -65,7 +65,7 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
 
     '''
     figList = []
-    for subNum in range(len(subColl.submissions)):
+    for subNum in range(comLimit):
         comWordCountList = getSubCommentsWordCounting(subColl, subNum, comWordLimit)
         
         #notify if not much comments
