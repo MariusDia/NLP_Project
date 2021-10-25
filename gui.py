@@ -359,7 +359,7 @@ class Gui(QMainWindow):
                histMix = mixedOverlapSubCommentHists(subColl)
 
                #Define the definition of mixed histograms and add it to the main layout
-               self.histoMix.setText("The mixed histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of a histogram selecting words of every comment of a single submission.<br>")
+               self.histoMix.setText("The mixed histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of a histogram selecting words of every comment (5 maximum) of a single submission.<br>")
                self.histoMix.setFont(QFont("Calibri", 14))
                self.histoMix.setStyleSheet("color:white;")
                self.contentLayout2.addWidget(self.histoMix)
@@ -508,7 +508,6 @@ class Gui(QMainWindow):
 
    #Function to convert a matplotlib figure to a QImage
    def figureToQImage(self, fig):
-      print(type(fig))
       canvas = FigureCanvas(fig)
       canvas.draw()
       size = canvas.size()
@@ -683,7 +682,6 @@ class Gui(QMainWindow):
    def deleteContent(self, layout):
       index = layout.count()
       for i in range(index):
-         print(layout.itemAt(i))
          widget = layout.itemAt(i).widget()
          widget.deleteLater()
          i += 1

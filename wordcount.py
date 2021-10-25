@@ -218,6 +218,7 @@ def pearsonCorrelation(subColl):
         sentiArticles = senti.getSentiment(article, score="dual")
         
         if all_comments == '':
+            sentiComments = []
             for i in range(len(sentiArticles)):
                 sentiComments.append(nullScore)
         else:
