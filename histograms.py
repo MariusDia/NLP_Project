@@ -18,7 +18,7 @@ def separateSubCommentsHist(subWordCount, comWordCountList, comLimit=5):
 
     Returns an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS
     -------
-    Returns an histogram of word overlapping of ONE SUBMISSION and EACH of its COMMENTS.
+    fig : Figure
 
     '''
 
@@ -64,9 +64,9 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     comWordLimit : int, optional
         Select the 'comWordLimit' most common words of COMMENTs. The default is 10
 
-    Draws X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS
+    Returns X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS
     -------
-    Returns X histograms of word overlapping of EVERY SUBMISSION and EACH of their COMMENTS.
+    figList : List of figures
 
     '''
     figList = []
@@ -104,9 +104,9 @@ def mixedOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
     comWordLimit : int, optional
         Select the 'comWordLimit' most common words of COMMENTs. The default is 10
 
-    Draws X histograms of word overlapping of EVERY SUBMISSION and EVERY one of their COMMENTS
+    Returns X histograms of word overlapping of EVERY SUBMISSION and EVERY one of their COMMENTS
     -------
-    Returns X histograms of word overlapping of EVERY SUBMISSION and EVERY one of their COMMENTS.
+    figList : List of figures
 
     '''
     

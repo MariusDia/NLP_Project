@@ -8,6 +8,12 @@ from praw.models import MoreComments, Submission
 
 from text_process import preProcess
 
+from histograms import separateOverlapSubCommentHists
+from histograms import mixedOverlapSubCommentHists
+
+from agreement_histograms import mixedAgreeHists
+from agreement_histograms import separatedAgreeHists
+
 # Reddit API authentification
 reddit = praw.Reddit(
     client_id="9aC2iDzQQi04w-q1cPmjUw",
@@ -43,7 +49,7 @@ class SubmissionCollection:
         self.submissions = []
         # setting submissions in the collection
         i = 0
-        for submission in reddit.subreddit(subReddit).search(query):
+        for submission in reddit.subreddit(subReddit).search(query, sort="top"):
             if not submission.is_self and submission.num_comments > 15 and not submission.is_video:
                 submission.comments.replace_more(limit=None)
                 self.submissions.append(SimpleSubmission(submission, comLimit))
@@ -53,11 +59,11 @@ class SubmissionCollection:
 
         # Text processing (tokenization and stopword removal)
         # Submission title processing
-        for sub in self.submissions:
+        '''for sub in self.submissions:
             _, _, sub.title = preProcess(sub.title)
             # Comments content processing
             """for comment in sub.comments:
-                comment.body = preProcess(comment.body)"""
+                comment.body = preProcess(comment.body)"""'''
 
     def getCommentLengthAverage(self):
         '''
@@ -79,3 +85,9 @@ class SubmissionCollection:
             else:
                 comLengthList.append(comLengthSum / len(sub.comments))
         return comLengthList
+    
+subColl=SubmissionCollection(5, 30, "industrial farming", "environment")
+print(len(subColl.submissions))
+
+mixedAgreeHists(subColl)
+separatedAgreeHists(subColl)
