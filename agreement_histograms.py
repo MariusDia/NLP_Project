@@ -18,15 +18,17 @@ def mixedAgreeHists(subColl):
     figList : List of figures
 
     '''
+    
     figList = []
     for i in range(len(subColl.submissions)):
         agreeDict = mergedComAgreeCount(subColl, i)
         
         #Putting the previous dictionary into a dtaframe which plots a histogram of word counts
-        fig = plt.bar(list(agreeDict.keys()), agreeDict.values())
-        #plt.title("Agreement/disagreement word count of EVERY comments of the article '" + subColl.submissions[i].title + "'.")
-        figList.append(fig)
-        #plt.show()
+        df =  pd.DataFrame(agreeDict)
+        fig = df.plot(kind='bar'
+                      , title="histgrams of agreement/disagreement words count of every comments of the submission combined"
+                      , legend=True)
+        figList.append(fig.get_figure())
         
     return figList
 
@@ -47,10 +49,25 @@ def separatedAgreeHist(comsAgreeCount, comLimit=5):
         A histogram showing agreement/disagreement words count of EACH comments of a submission.
 
     '''
-    fig, axs = plt.subplots(comLimit)
-    fig.suptitle("Agreement/disagreement word count of EACH comments of a submission.")
-    for i in range(comLimit):
-        axs[i].bar(list(comsAgreeCount[i].keys()),comsAgreeCount[i].values())
+    
+    # ♣Figure initialization
+    if comLimit<len(comsAgreeCount):
+        nrows_p = comLimit
+    else:
+        nrows_p = len(comsAgreeCount)
+        
+    fig, axs = plt.subplots(nrows = nrows_p)
+    fig.suptitle("Agreement/disagreement word count of EACH comments of the first " + str(comLimit) + " a submission.")
+    
+    i=0
+    for comAgreeCount in comsAgreeCount:
+        df = pd.DataFrame(comAgreeCount)
+        df.plot(ax=axs[i]
+                , kind='bar'
+                , rot=30)
+        i+=1
+        if i>=5:
+            break
     
     return fig
 
@@ -72,7 +89,7 @@ def separatedAgreeHists(subColl):
     
     for sub in subColl.submissions:
         comsAgreeCount = comAgreeCounting(sub)
-        figList.append(separatedAgreeHist(comsAgreeCount))
+        figList.append(separatedAgreeHist(comsAgreeCount).get_figure())
         
     return figList
         

@@ -86,7 +86,7 @@ class SubmissionCollection:
                 comLengthList.append(comLengthSum / len(sub.comments))
         return comLengthList
     
-subColl=SubmissionCollection(5, 30, "industrial farming", "environment")
+subColl=SubmissionCollection(5, 50, "industrial farming", "environment")
 print(len(subColl.submissions))
 
 mixedAgreeHists(subColl)
