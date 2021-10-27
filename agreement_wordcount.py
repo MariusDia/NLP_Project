@@ -18,15 +18,15 @@ def mergedComAgreeCount(subColl, subNum):
         A dictionary of agreement/disagreement words count of a submission's comments.
 
     '''
-    agreeDict = {"agreement":0, "disagreement":0}
+    agreeDict = {"Agreement/Disagreement Act":["agreement", "disagreement"], "count":[0,0]}
     sub = subColl.submissions[subNum]
     
     for com in sub.comments:
         for word in com.split():
             if word in agreement:
-                agreeDict["agreement"]+=1
+                agreeDict["count"][0]+=1
             elif word in disagreement:
-                agreeDict["disagreement"]+=1
+                agreeDict["count"][1]+=1
     
     return agreeDict
 
@@ -48,13 +48,12 @@ def comAgreeCounting(sub):
     comsAgreeCount = []
     
     for com in sub.comments:
-        agreeDict = {"agreement":0, "disagreement":0}
+        agreeDict = {"Agreement/Disagreement Act":["agreement", "disagreement"], "count":[0,0]}
         for word in com.split():
-            
             if word in agreement:
-                agreeDict["agreement"]+=1
+                agreeDict["count"][0]+=1
             elif word in disagreement:
-                agreeDict["disagreement"]+=1
+                agreeDict["count"][1]+=1
         comsAgreeCount.append(agreeDict)
         
     return comsAgreeCount
