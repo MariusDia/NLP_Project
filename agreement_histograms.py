@@ -26,7 +26,7 @@ def mixedAgreeHists(subColl):
         #Putting the previous dictionary into a dtaframe which plots a histogram of word counts
         df =  pd.DataFrame(agreeDict)
         fig = df.plot(kind='bar'
-                      , title="histgrams of agreement/disagreement words count of every comments of the submission combined"
+                      , title="Histgrams of agreement/disagreement words count of\nevery comments of the submission combined"
                       , legend=True)
         figList.append(fig.get_figure())
         
@@ -57,7 +57,7 @@ def separatedAgreeHist(comsAgreeCount, comLimit=5):
         nrows_p = len(comsAgreeCount)
         
     fig, axs = plt.subplots(nrows = nrows_p)
-    fig.suptitle("Agreement/disagreement word count of EACH comments of the first " + str(comLimit) + " a submission.")
+    fig.suptitle("Agreement/disagreement word count of EACH comments\n(5 maximum) of a submission.")
     
     i=0
     for comAgreeCount in comsAgreeCount:

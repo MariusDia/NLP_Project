@@ -87,7 +87,6 @@ def separateOverlapSubCommentHists(subColl, subWordLimit=10, comWordLimit=10):
         else:
             print("No comments ? " + str(subColl.submissions[subNum].title))
             return "No comments"
-        
     return figList
 
 
