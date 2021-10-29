@@ -84,4 +84,8 @@ class SubmissionCollection:
                 comLengthList.append(-1)
             else:
                 comLengthList.append(comLengthSum / len(sub.comments))
+<<<<<<< HEAD
         return comLengthList
+=======
+        return comLengthList
+>>>>>>> a63826bc46bc0de89559e847137e1b0feeef99d2
