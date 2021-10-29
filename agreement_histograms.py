@@ -27,6 +27,9 @@ def mixedAgreeHists(subColl):
         df =  pd.DataFrame(agreeDict)
         fig = df.plot(kind='bar'
                       , title="histgrams of agreement/disagreement words count of every comments of the submission combined"
+                      , x='Agreement/Disagreement Act'
+                      , y='count'
+                      , rot=50
                       , legend=True)
         figList.append(fig.get_figure())
         
@@ -57,14 +60,17 @@ def separatedAgreeHist(comsAgreeCount, comLimit=5):
         nrows_p = len(comsAgreeCount)
         
     fig, axs = plt.subplots(nrows = nrows_p)
-    fig.suptitle("Agreement/disagreement word count of EACH comments of the first " + str(comLimit) + " a submission.")
+    fig.suptitle("Agreement/disagreement word count of EACH of the first " + str(comLimit) + " comments of a submission.")
     
     i=0
     for comAgreeCount in comsAgreeCount:
         df = pd.DataFrame(comAgreeCount)
         df.plot(ax=axs[i]
                 , kind='bar'
-                , rot=30)
+                , x='Agreement/Disagreement Act'
+                , y='count'
+                , rot=50
+                )
         i+=1
         if i>=5:
             break
