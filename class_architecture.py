@@ -3,6 +3,10 @@
 import requests
 from bs4 import BeautifulSoup
 
+import time
+import threading
+import sys
+
 import praw
 from praw.models import MoreComments, Submission
 
@@ -47,6 +51,13 @@ class SubmissionCollection:
         self.subReddit = subReddit
 
         self.submissions = []
+
+        #Starting the time to get the execution time
+        start_time = time.time()
+
+        check_time = threading.Thread(self.checkTime(start_time))
+        check_time.start()
+
         # setting submissions in the collection
         i = 0
         for submission in reddit.subreddit(subReddit).search(query, sort="top"):
@@ -56,7 +67,6 @@ class SubmissionCollection:
                 i += 1
                 if i >= subLimit:
                     break
-
         # Text processing (tokenization and stopword removal)
         # Submission title processing
         '''for sub in self.submissions:
@@ -64,6 +74,13 @@ class SubmissionCollection:
             # Comments content processing
             """for comment in sub.comments:
                 comment.body = preProcess(comment.body)"""'''
+
+    def checkTime(self, startTime):
+        while True:
+            time.sleep(1)
+            if time.time() - startTime >= 8*60:
+                raise RuntimeError
+
 
     def getCommentLengthAverage(self):
         '''
