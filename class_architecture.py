@@ -32,6 +32,8 @@ class SimpleSubmission():
         self.url = pSubmission.url
         self.is_self = pSubmission.is_self
         self.raw_comments = [c.body for c in sorted(pSubmission.comments.list(), key= lambda c: c.score, reverse=True)[0:com_limit]]
+        #self.raw_comments = [c.body for c in pSubmission.comments.list()[0:com_limit]]
+
         self.raw_article = self.get_raw_article()
         self.comments = [preProcess(c)[2] for c in self.raw_comments if ('I am a bot' not in c)]
         self.article = preProcess(self.raw_article)[2]
@@ -55,25 +57,23 @@ class SubmissionCollection:
         start_time = time.time()
 
         #Run in parallel the function checkTime
-        check_time = threading.Thread(self.checkTime(start_time))
-        check_time.start()
+        #check_time = threading.Thread(self.checkTime(start_time))
+        #check_time.start()
 
         # setting submissions in the collection
         i = 0
-        for submission in reddit.subreddit(subReddit).search(query, sort="top"):
+        for submission in reddit.subreddit(subReddit).search(query, sort="new"):
             if not submission.is_self and submission.num_comments > 15 and not submission.is_video:
-                submission.comments.replace_more(limit=None)
+                submission.comments.replace_more(limit=0)
+                print('replaced')
                 self.submissions.append(SimpleSubmission(submission, comLimit))
+                print('appended')
                 i += 1
+
                 if i >= subLimit:
+
                     break
-        # Text processing (tokenization and stopword removal)
-        # Submission title processing
-        '''for sub in self.submissions:
-            _, _, sub.title = preProcess(sub.title)
-            # Comments content processing
-            """for comment in sub.comments:
-                comment.body = preProcess(comment.body)"""'''
+        # Text processing (tokenization and stopword removal
 
     #Function used to check the time
     def checkTime(self, startTime):

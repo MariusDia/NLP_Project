@@ -1,16 +1,12 @@
 from collections import defaultdict
 
-import nltk
 import pandas as pd
 
-from nltk.parse import stanford
 from text_process import preProcess
-import stanza
-from empath import Empath
+
 import spacy
 from spacy.symbols import *
-from spacy.matcher import DependencyMatcher
-from spacy import displacy
+
 
 def find_noun(token):
     if (token):
@@ -28,7 +24,7 @@ def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
     # histogram of negative words
     negative_hist = defaultdict(int)
     nlp = spacy.load("en_core_web_sm")
-    for sub in subColl:
+    for sub in subColl.submissions:
         for sent in preProcess(sub.comments_doc)[0]:
             doc = nlp(sent)
             for token in doc:
@@ -38,4 +34,14 @@ def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
                     if token.head.pos == VERB and any(child.text in negative_list for child in token.head.children):
                         negative_hist[token.text] += 1
 
-    print(negative_hist)
+    negative_hist = sorted(negative_hist, reverse=True)
+
+    df = pd.DataFrame(negative_hist)
+    print(df)
+    fig = df.head(10).plot(kind='bar',
+                           title="histogram of the 10 most mentioned entities"
+                           , x='entity name'
+                           , y='count'
+                           , rot=0
+                           , legend=True)
+    return fig.get_figure()
