@@ -9,7 +9,7 @@ from wordcount import pearsonCorrelation
 
 from histograms import separateOverlapSubCommentHists
 from histograms import mixedOverlapSubCommentHists
-
+from negative_sent import negative_entities
 from LDA import performLDA
 
 
@@ -89,13 +89,17 @@ def main():
 
 # main()
 
+
+
+
 subLimit=1
 comLimit=20
-query="greta"
-subReddit="news"
+query="industrial farming"
+subReddit="climate"
 print("Processing submission collection... \n\n")
 subColl = SubmissionCollection(subLimit, comLimit, query, subReddit)
-
+negative_entities(subColl)
+"""
 
 print('pearson')
 print(pearsonCorrelation(subColl))
@@ -112,3 +116,4 @@ print(performLDA(subColl, 3))
 
 print("Pearson\n\n")
 print(pearsonCorrelation(subColl))'''
+"""
