@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 
 import time
 import threading
-import sys
 
 import praw
 from praw.models import MoreComments, Submission
@@ -55,6 +54,7 @@ class SubmissionCollection:
         #Starting the time to get the execution time
         start_time = time.time()
 
+        #Run in parallel the function checkTime
         check_time = threading.Thread(self.checkTime(start_time))
         check_time.start()
 
@@ -75,9 +75,12 @@ class SubmissionCollection:
             """for comment in sub.comments:
                 comment.body = preProcess(comment.body)"""'''
 
+    #Function used to check the time
     def checkTime(self, startTime):
         while True:
             time.sleep(1)
+
+            #If the execution time is equal or more than 8 minutes -> raise error
             if time.time() - startTime >= 8*60:
                 raise RuntimeError
 
