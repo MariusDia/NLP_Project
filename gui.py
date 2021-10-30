@@ -1,4 +1,3 @@
-from re import sub
 import sys
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
@@ -12,8 +11,6 @@ from LDA import performLDA
 from agreement_histograms import mixedAgreeHists, separatedAgreeHists
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
-import time
 
 class Gui(QMainWindow):
    def __init__(self):
