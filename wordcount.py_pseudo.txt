@@ -1,0 +1,75 @@
+import os
+FROM sentistrength IMPORT PySentiStr
+FROM text_process IMPORT preProcess
+FROM scipy IMPORT stats
+
+FUNCTION calculateJacquard(subColl):
+
+    DATA: coefficients (LIST)
+
+    FOR i IN range(LENGTH subColl.submissions):
+
+        subWords = LIST OF DICTIONARIES OF MOST COMMON WORDS OF A SUBMISSION (getSubWordCounting)
+
+        subComWords = DICTIONARY OF THE SUBMISSIONS COMMENT MOST COMMON WORDS (getMergedComWordCount)
+
+        ADD JACCARD COEFFICIENT OF subWords AND subComWords TO coefficients
+
+    RETURN coefficients
+
+
+FUNCTION jacquardCoeff(l1, l2):
+
+    commonWords = LIST OF INTERSECTION BETWEEN SET OF l1 AND l2
+    distinctWords = LIST OF UNION BETWEEN l1 AND l2
+    RETURN LENGTH OF commonWords / LENGTH OF distinctWords
+
+
+
+FUNCTION pearsonCorrelation(subColl):
+
+    senti = PySentiStr()
+    curr_dir = CURRENT DIRECTORY
+
+    SETTING PATH TO SENTISTRENGTH LIBRARY PATH TO SentiStrengthCom.jar
+    SETTING PATH TO SENTISTRENGTH LANGUAGE PATH TO SentStrength_Data_Sept2011
+
+    pearson_scores = LIST
+
+    nullScore = (0, 0)
+
+    FOR sub IN subColl.submissions:
+
+        article = sub.raw_article
+        all_comments = PREPROCESSED sub.comments_doc (preProcess[0])
+        sentiArticles = senti.getSentiment(article, score="dual") ???
+
+        IF all_comments EQUALS '':
+
+            sentiComments = LIST
+            
+            FOR i IN LENGTH OF sentiArticles:
+
+                ADD nullScore TO sentiComments
+
+        ELSE:
+
+            sentiComments = senti.getSentiment(all_comments, score="dual") ???
+
+            
+
+        IF LENGTH OF sentiComments < LENGTH OF sentiArticles:
+
+            FOR i FROM LENGTH OF sentiComments TO LENGTH OF sentiArticles:
+
+                ADD nullScore TO sentiComments
+
+        ELSE IF LENGTH OF sentiComments > LENGTH OF sentiArticles:
+
+            FOR i FROM LENGTH sentiArticles TO LENGTH OF sentiComments:
+
+                ADD nullScore TO sentiArticles                
+
+        ADD PEARSON COEFFICIENTS AND P-VALUE FROM (np.array(sentiArticles).reshape(len(sentiArticles)*2), np.array(sentiComments).reshape(len(sentiComments)*2)) TO pearson_scores ???
+
+    RETURN pearson_scores
