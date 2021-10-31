@@ -62,9 +62,9 @@ class SubmissionCollection:
 
         # setting submissions in the collection
         i = 0
-        for submission in reddit.subreddit(subReddit).search(query, sort="new"):
+        for submission in reddit.subreddit(subReddit).search(query, sort="hot"):
             if not submission.is_self and submission.num_comments > 15 and not submission.is_video:
-                submission.comments.replace_more(limit=0)
+                submission.comments.replace_more(limit=20)
                 self.submissions.append(SimpleSubmission(submission, comLimit))
                 i += 1
 

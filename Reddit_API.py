@@ -92,12 +92,13 @@ def main():
 
 
 
-subLimit=3
+subLimit=4
 comLimit=20
 query="industrial farming"
 subReddit="news"
 print("Processing submission collection... \n\n")
 subColl = SubmissionCollection(subLimit, comLimit, query, subReddit)
+print('negative entities')
 negative_entities(subColl)
 """
 

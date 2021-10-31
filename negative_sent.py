@@ -7,12 +7,6 @@ from text_process import preProcess
 import spacy
 from spacy.symbols import *
 
-
-def find_noun(token):
-    if (token):
-        return
-
-
 def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
     # nltk.download('averaged_perceptron_tagger')
     # nltk.download('maxent_ne_chunker')
@@ -34,13 +28,16 @@ def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
                     if token.head.pos == VERB and any(child.text in negative_list for child in token.head.children):
                         negative_hist[token.text] += 1
 
+
     negative_hist = sorted(negative_hist.items(), reverse=True)
     df = pd.DataFrame(negative_hist,columns=['entity name','count'])
     df = df.sort_values(by='count', ascending=False)
+
     fig = df.head(10).plot(kind='bar',
                            title="histogram of the 10 most mentioned entities"
                            , x='entity name'
                            , y='count'
                            , rot=0
                            , legend=True)
+    print(df.head(10))
     return fig.get_figure()
