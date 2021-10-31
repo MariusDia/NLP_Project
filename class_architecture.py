@@ -65,9 +65,7 @@ class SubmissionCollection:
         for submission in reddit.subreddit(subReddit).search(query, sort="new"):
             if not submission.is_self and submission.num_comments > 15 and not submission.is_video:
                 submission.comments.replace_more(limit=0)
-                print('replaced')
                 self.submissions.append(SimpleSubmission(submission, comLimit))
-                print('appended')
                 i += 1
 
                 if i >= subLimit:
