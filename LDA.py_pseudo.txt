@@ -1,0 +1,55 @@
+FROM text_process IMPORT preProcess
+FROM wordcount IMPORT *
+FROM gensim
+FROM gensim IMPORT corpora
+FROM nltk.tokenize IMPORT sent_tokenize, word_tokenize
+
+FUNCTION performLDA(subColl, NUM_TOPICS=3):
+
+    jc = LIST
+
+    FOR sub IN subColl.submissions:
+
+        article_text_data = LIST OF TOKENIZED WORDS FROM sub.raw_article (preProcess[1])
+
+        dictionary = DICTIONARY WHICH MAPS NORMALIZED WORDS WITH AN ID FROM article_text_data (corpora.Dictionary)
+
+        corpus = LIST
+        FOR text IN article_text_data:
+            ADD (LIST OF 2-TUPLES (token_id, token_count) FROM text) TO corpus (dictionary.doc2bow)
+
+        ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15) ???
+
+        article_topics = 5 MOST SIGNIFICANT WORDS FROM ldamodel (ldamodel.show_topics)
+
+        article_topic_words = SET
+
+        FOR topic IN article_topics:
+
+            article_topic_words = article_topic_words.union(set([t[0] FOR t IN topic[1]])) ???
+
+        comments_text_data = LIST OF TOKENIZED WORDS FROM sub.comments_doc (preProcess[1])
+
+        dictionary = DICTIONARY WHICH MAPS NORMALIZED WORDS WITH AN ID FROM comments_text_data (corpora.Dictionary)
+
+        corpus = LIST
+        FOR text IN comments_text_data:
+            ADD (LIST OF 2-TUPLES (token_id, token_count) FROM text) TO corpus (dictionary.doc2bow)
+
+        ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15)
+
+        comments_topics = 5 MOST SIGNIFICANT WORDS FROM ldamodel (ldamodel.show_topics)
+
+        comments_topic_words = SET
+
+        FOR topic IN comments_topics:
+
+            comments_topic_words = comments_topic_words.union(set([t[0] FOR t IN topic[1]])) ???
+
+        PRINT article_topic_words
+        PRINT comments_topic_words
+
+        ADD JACCARD COEFFICIENT OF article_topic_words AND comments_topic_words TO jc (jacquardCoeff)
+
+    RETURN jc
+
