@@ -41,6 +41,6 @@ def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
                            title="histogram of the 10 most mentioned entities"
                            , x='entity name'
                            , y='count'
-                           , rot=0
+                           , rot=30
                            , legend=True)
     return fig.get_figure()
