@@ -34,10 +34,9 @@ def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
                     if token.head.pos == VERB and any(child.text in negative_list for child in token.head.children):
                         negative_hist[token.text] += 1
 
-    negative_hist = sorted(negative_hist, reverse=True)
-
-    df = pd.DataFrame(negative_hist)
-    print(df)
+    negative_hist = sorted(negative_hist.items(), reverse=True)
+    df = pd.DataFrame(negative_hist,columns=['entity name','count'])
+    df = df.sort_values(by='count', ascending=False)
     fig = df.head(10).plot(kind='bar',
                            title="histogram of the 10 most mentioned entities"
                            , x='entity name'
