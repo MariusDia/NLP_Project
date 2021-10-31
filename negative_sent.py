@@ -14,9 +14,9 @@ def find_noun(token):
 
 
 def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
-    # nltk.download('averaged_perceptron_tagger')
-    # nltk.download('maxent_ne_chunker')
-    # nltk.download('words')
+    #nltk.download('averaged_perceptron_tagger')
+    #nltk.download('maxent_ne_chunker')
+    #nltk.download('words')
     # list of negative words
     doc = pd.read_csv(lexicon, sep='\t', names=['token', 'mn', 'std', 'raw'])
     negative_list = doc[doc['mn'] < -0.5]['token'].tolist()

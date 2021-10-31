@@ -57,12 +57,12 @@ class SubmissionCollection:
         start_time = time.time()
 
         #Run in parallel the function checkTime
-        #check_time = threading.Thread(self.checkTime(start_time))
-        #check_time.start()
+        check_time = threading.Thread(target=self.checkTime, args=[start_time]) #self.checkTime(start_time)
+        check_time.start()
 
         # setting submissions in the collection
         i = 0
-        for submission in reddit.subreddit(subReddit).search(query, sort="new"):
+        for submission in reddit.subreddit(subReddit).search(query, sort="top"):
             if not submission.is_self and submission.num_comments > 15 and not submission.is_video:
                 submission.comments.replace_more(limit=0)
                 print('replaced')
@@ -71,9 +71,7 @@ class SubmissionCollection:
                 i += 1
 
                 if i >= subLimit:
-
                     break
-        # Text processing (tokenization and stopword removal
 
     #Function used to check the time
     def checkTime(self, startTime):

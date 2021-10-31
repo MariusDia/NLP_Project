@@ -9,6 +9,7 @@ from wordcount import calculateJacquard, pearsonCorrelation
 from histograms import separateOverlapSubCommentHists, mixedOverlapSubCommentHists
 from LDA import performLDA
 from agreement_histograms import mixedAgreeHists, separatedAgreeHists
+from negative_sent import negative_entities
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
@@ -113,7 +114,7 @@ class Gui(QMainWindow):
 
       #The user can choose the subReddit from a list
       self.comboSubReddit = QComboBox()
-      self.comboSubReddit.addItems(sorted(['all', 'environment', 'worldnews', 'vegan', 'science', 'collapse', 'europe', 'unpopularopinion']))
+      self.comboSubReddit.addItems(sorted(['all', 'environment', 'worldnews', 'vegan', 'science', 'collapse', 'europe', 'unpopularopinion', 'news']))
       self.comboSubReddit.setStyleSheet("color:white;background-color:#3b3b45")
       self.comboSubReddit.setFont(QFont("Calibri", 14))
       self.comboSubReddit.setFixedSize(210, 45)
@@ -144,7 +145,6 @@ class Gui(QMainWindow):
       self.buttonHistoSep.pressed.connect(self.getHistoSep)
       self.buttonHistoSep.setFont(self.buttonFont)
       self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoSep.resize(110, 45)
       self.buttonHistoSep.setCursor(Qt.PointingHandCursor)
 
       #Button to show mixed histograms for most frequent words
@@ -152,7 +152,6 @@ class Gui(QMainWindow):
       self.buttonHistoMix.pressed.connect(self.getHistoMix)
       self.buttonHistoMix.setFont(self.buttonFont)
       self.buttonHistoMix.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoMix.resize(110, 45)
       self.buttonHistoMix.setCursor(Qt.PointingHandCursor)
 
       #Button to show Jaccard indexes
@@ -160,7 +159,6 @@ class Gui(QMainWindow):
       self.buttonJaccard.pressed.connect(self.getJaccardIndex)
       self.buttonJaccard.setFont(self.buttonFont)
       self.buttonJaccard.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonJaccard.resize(90, 45)
       self.buttonJaccard.setCursor(Qt.PointingHandCursor)
 
       #Button to show Pearson correlations
@@ -168,24 +166,28 @@ class Gui(QMainWindow):
       self.buttonPearson.pressed.connect(self.getPearsonCorrelation)
       self.buttonPearson.setFont(self.buttonFont)
       self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonPearson.resize(110, 45)
       self.buttonPearson.setCursor(Qt.PointingHandCursor)
 
       #Button to show separated histograms for agreement/disagreement
-      self.buttonHistoSepAD = QPushButton("Agreement/disagreement (SH)")
+      self.buttonHistoSepAD = QPushButton("(dis)agreement (SH)")
       self.buttonHistoSepAD.pressed.connect(self.getHistoSepAD)
       self.buttonHistoSepAD.setFont(self.buttonFont)
       self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoSepAD.resize(110, 45)
       self.buttonHistoSepAD.setCursor(Qt.PointingHandCursor)
 
       #Button to show mixed histograms for agreement/disagreement
-      self.buttonHistoMixAD = QPushButton("Agreement/disagreement (MH)")
+      self.buttonHistoMixAD = QPushButton("(dis)agreement (MH)")
       self.buttonHistoMixAD.pressed.connect(self.getHistoMixAD)
       self.buttonHistoMixAD.setFont(self.buttonFont)
       self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoMixAD.resize(110, 45)
       self.buttonHistoMixAD.setCursor(Qt.PointingHandCursor)
+
+      #Button to show the histogram for the nouns most often referenced with negative terms
+      self.buttonHistoNegative = QPushButton("Negative words")
+      self.buttonHistoNegative.pressed.connect(self.getHistoNegative)
+      self.buttonHistoNegative.setFont(self.buttonFont)
+      self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+      self.buttonHistoNegative.setCursor(Qt.PointingHandCursor)
 
       #Define all the scrollbars we will need
       self.scrollBar1 = QScrollArea()
@@ -202,6 +204,8 @@ class Gui(QMainWindow):
       self.scrollBar5a = QScrollArea()
       self.scrollBar6 = QScrollArea()
       self.scrollBar6a = QScrollArea()
+      self.scrollBar7 = QScrollArea()
+      self.scrollBar7a = QScrollArea()
 
       #Define the layout for menu
       self.menuLayout.addWidget(self.logo)
@@ -228,6 +232,7 @@ class Gui(QMainWindow):
       self.buttonsLayout.addWidget(self.buttonPearson)
       self.buttonsLayout.addWidget(self.buttonHistoSepAD)
       self.buttonsLayout.addWidget(self.buttonHistoMixAD)
+      self.buttonsLayout.addWidget(self.buttonHistoNegative)
 
       #Define the main layout 
       self.page_layout.addStretch()
@@ -283,6 +288,7 @@ class Gui(QMainWindow):
       self.pears2 = QLabel()
       self.histoSepAD = QLabel()
       self.histoMixAD = QLabel()
+      self.histoNegative = QLabel()
       
       #Define layouts for definitions and results
       self.contentLayout1 = QVBoxLayout(self)
@@ -299,6 +305,8 @@ class Gui(QMainWindow):
       self.contentLayout5a = QHBoxLayout(self)
       self.contentLayout6 = QVBoxLayout(self)
       self.contentLayout6a = QHBoxLayout(self)
+      self.contentLayout7 = QVBoxLayout(self)
+      self.contentLayout7a = QHBoxLayout(self)
 
       #if the main layout contains more than 4 layouts (it has results and definitions), delete the results
       if(self.page_layout.count() > 4):
@@ -309,6 +317,7 @@ class Gui(QMainWindow):
          self.deleteContent(self.contentLayout4a)
          self.deleteContent(self.contentLayout5a)
          self.deleteContent(self.contentLayout6a)
+         self.deleteContent(self.contentLayout7a)
 
       #Update the window
       self.repaint()
@@ -335,6 +344,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.deleteLater()
          self.scrollBar6.deleteLater()
          self.scrollBar6a.deleteLater()
+         self.scrollBar7.deleteLater()
+         self.scrollBar7a.deleteLater()
 
       #If one field is missing -> error message
       if query == '' or submission == '' or comments == '':
@@ -553,6 +564,32 @@ class Gui(QMainWindow):
                      self.scrollBar6a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
                   self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar6a)
                   
+                  #TODO
+                  #Get the histogram for the nouns related to the negative terms
+                  histNegative = negative_entities(subColl)
+
+                  #Define the definition of histogram for the nouns related to the negative terms and add it to the main layout
+                  self.histoNegative.setText("The histogram shows the nouns most often referenced with negative terms in all comments for all the submissions.<br>")
+                  self.histoNegative.setFont(QFont("Calibri", 14))
+                  self.histoNegative.setStyleSheet("color:white;")
+                  self.contentLayout7.addWidget(self.histoNegative)
+                  self.contentLayout7.setSizeConstraint(3)
+                  self.scrollBar7 = self.scrollAreaToLayout(self.contentLayout7)
+                  self.scrollBar7.setFixedHeight(115)
+                  self.scrollBar7.setDisabled(True)
+                  self.scrollBar7.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar7)
+
+                  #Add the histogram for the nouns related to the negative terms to the main layout
+                  self.contentLayout7a.addWidget(self.createLabelFromFigure(histNegative))
+                  self.contentLayout7a.setSizeConstraint(3)
+                  self.scrollBar7a = self.scrollAreaToLayout(self.contentLayout7a)
+                  self.scrollBar7a.setFixedHeight(550)
+                  #If the layout contains less than 3 widgets -> no need of scrollbar
+                  if self.contentLayout7a.count() < 3:
+                     self.scrollBar7a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
+                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar7a)
+
                   #Show the separated histograms
                   self.getHistoSep()
 
@@ -578,6 +615,7 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       #Else, remove the processing message
       else:
          self.error.setText("")
@@ -665,6 +703,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
@@ -673,16 +713,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the mixed histograms for most frequent words
    def getHistoMix(self):
@@ -702,6 +742,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -710,16 +752,17 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
 
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
+         #self.repaint()
 
    #Show the Jaccard indexes
    def getJaccardIndex(self):
@@ -739,6 +782,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -747,16 +792,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the Pearson correlations
    def getPearsonCorrelation(self):
@@ -776,6 +821,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -784,16 +831,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
 
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the separated histograms for agreement/disagreement
    def getHistoSepAD(self):
@@ -813,6 +860,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.show()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -821,16 +870,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the mixed histograms for most frequent words
    def getHistoMixAD(self):
@@ -850,6 +899,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.show()
          self.scrollBar6a.show()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -858,16 +909,56 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
 
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
+
+   #TODO
+   #Show the mixed histograms for most frequent words
+   def getHistoNegative(self):
+      #If the user send a query without error -> show the mixed histograms and the definition of mixed histograms
+      if self.isSubmit == True and self.boolError == False:
+         self.scrollBar1.hide()
+         self.scrollBar1a.hide()
+         self.scrollBar2.hide()
+         self.scrollBar2a.hide()
+         self.scrollBar3.hide()
+         self.scrollBar3a.hide()
+         self.scrollBar3b.hide()
+         self.scrollBar3c.hide()
+         self.scrollBar4.hide()
+         self.scrollBar4a.hide()
+         self.scrollBar5.hide()
+         self.scrollBar5a.hide()
+         self.scrollBar6.hide()
+         self.scrollBar6a.hide()
+         self.scrollBar7.show()
+         self.scrollBar7a.show()
+
+         #Show the current tab
+         self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoMix.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonJaccard.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
+
+      #Else -> error message
+      else: 
+         self.error.setText("Please send a submission.")
+         self.error.setFixedSize(265 + 40, 30)
+         self.error.setAlignment(Qt.AlignCenter)
+         self.error.setFont(QFont("Calibri", 14))
+         self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Function to delete the content of a layout
    def deleteContent(self, layout):
