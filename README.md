@@ -19,4 +19,6 @@
 8.	Design and implement a simple GUI interface that would allow you to demonstrate and exemplify your reasoning.
 
 
+### How to run the project
+
 To run the project, you must clone the git repository, install all the libraries needed (specified in Appendix in the report) and be sure that Java is installed. Then, you can open "gui.py" in an ide and execute it.
