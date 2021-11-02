@@ -70,10 +70,6 @@ FUNCTION pearsonCorrelation(subColl):
 
                 ADD nullScore TO sentiArticles                
 
-<<<<<<< Updated upstream
-        ADD PEARSON COEFFICIENTS AND P-VALUE FROM sentiArticle and sentiComments with the same length TO pearson_scores
-=======
         ADD PEARSON COEFFICIENTS AND P-VALUE FROM sentiArticles AND sentiComments WITH THE SAME LENGTH TO pearson_scores
->>>>>>> Stashed changes
 
     RETURN pearson_scores
