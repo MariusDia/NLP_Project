@@ -42,7 +42,7 @@ FUNCTION pearsonCorrelation(subColl):
 
         article = sub.raw_article
         all_comments = PREPROCESSED sub.comments_doc (preProcess[0])
-        sentiArticles = GET an array with a score for each sentence of the article (the score is a vector with positive rating and negative rating)
+        sentiArticles = GET AN ARRAY WITH A SCORE OF EACH SENTENCE OF THE ARTICLE (THE SCORE IS A POSITIVE OR NEGATIVE RATING)
 
         IF all_comments EQUALS '':
 
@@ -54,7 +54,7 @@ FUNCTION pearsonCorrelation(subColl):
 
         ELSE:
 
-            sentiComments = GET an array with a score for each sentence of the comments (the score is a vector with positive rating and negative rating)
+            sentiComments = GET AN ARRAY WITH A SCORE OF EACH SENTENCE OF THE COMMENTS (THE SCORE IS A POSITIVE OR NEGATIVE RATING)
 
             
 
@@ -70,6 +70,10 @@ FUNCTION pearsonCorrelation(subColl):
 
                 ADD nullScore TO sentiArticles                
 
+<<<<<<< Updated upstream
         ADD PEARSON COEFFICIENTS AND P-VALUE FROM sentiArticle and sentiComments with the same length TO pearson_scores
+=======
+        ADD PEARSON COEFFICIENTS AND P-VALUE FROM sentiArticles AND sentiComments WITH THE SAME LENGTH TO pearson_scores
+>>>>>>> Stashed changes
 
     RETURN pearson_scores
