@@ -70,6 +70,6 @@ FUNCTION pearsonCorrelation(subColl):
 
                 ADD nullScore TO sentiArticles                
 
-        ADD PEARSON COEFFICIENTS AND P-VALUE FROM (np.array(sentiArticles).reshape(len(sentiArticles)*2), np.array(sentiComments).reshape(len(sentiComments)*2)) TO pearson_scores ???
+        ADD PEARSON COEFFICIENTS AND P-VALUE FROM sentiArticle and sentiComments with the same length TO pearson_scores
 
     RETURN pearson_scores
