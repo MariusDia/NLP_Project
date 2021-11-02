@@ -9,6 +9,7 @@ from wordcount import calculateJacquard, pearsonCorrelation
 from histograms import separateOverlapSubCommentHists, mixedOverlapSubCommentHists
 from LDA import performLDA
 from agreement_histograms import mixedAgreeHists, separatedAgreeHists
+from negative_sent import negative_entities
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
@@ -113,7 +114,7 @@ class Gui(QMainWindow):
 
       #The user can choose the subReddit from a list
       self.comboSubReddit = QComboBox()
-      self.comboSubReddit.addItems(sorted(['all', 'environment', 'worldnews', 'vegan', 'science', 'collapse', 'europe', 'unpopularopinion']))
+      self.comboSubReddit.addItems(sorted(['all', 'environment', 'worldnews', 'vegan', 'science', 'collapse', 'europe', 'unpopularopinion', 'news']))
       self.comboSubReddit.setStyleSheet("color:white;background-color:#3b3b45")
       self.comboSubReddit.setFont(QFont("Calibri", 14))
       self.comboSubReddit.setFixedSize(210, 45)
@@ -144,7 +145,6 @@ class Gui(QMainWindow):
       self.buttonHistoSep.pressed.connect(self.getHistoSep)
       self.buttonHistoSep.setFont(self.buttonFont)
       self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoSep.resize(110, 45)
       self.buttonHistoSep.setCursor(Qt.PointingHandCursor)
 
       #Button to show mixed histograms for most frequent words
@@ -152,7 +152,6 @@ class Gui(QMainWindow):
       self.buttonHistoMix.pressed.connect(self.getHistoMix)
       self.buttonHistoMix.setFont(self.buttonFont)
       self.buttonHistoMix.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoMix.resize(110, 45)
       self.buttonHistoMix.setCursor(Qt.PointingHandCursor)
 
       #Button to show Jaccard indexes
@@ -160,7 +159,6 @@ class Gui(QMainWindow):
       self.buttonJaccard.pressed.connect(self.getJaccardIndex)
       self.buttonJaccard.setFont(self.buttonFont)
       self.buttonJaccard.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonJaccard.resize(90, 45)
       self.buttonJaccard.setCursor(Qt.PointingHandCursor)
 
       #Button to show Pearson correlations
@@ -168,24 +166,28 @@ class Gui(QMainWindow):
       self.buttonPearson.pressed.connect(self.getPearsonCorrelation)
       self.buttonPearson.setFont(self.buttonFont)
       self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonPearson.resize(110, 45)
       self.buttonPearson.setCursor(Qt.PointingHandCursor)
 
       #Button to show separated histograms for agreement/disagreement
-      self.buttonHistoSepAD = QPushButton("Agreement/disagreement (SH)")
+      self.buttonHistoSepAD = QPushButton("(dis)agreement (SH)")
       self.buttonHistoSepAD.pressed.connect(self.getHistoSepAD)
       self.buttonHistoSepAD.setFont(self.buttonFont)
       self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoSepAD.resize(110, 45)
       self.buttonHistoSepAD.setCursor(Qt.PointingHandCursor)
 
       #Button to show mixed histograms for agreement/disagreement
-      self.buttonHistoMixAD = QPushButton("Agreement/disagreement (MH)")
+      self.buttonHistoMixAD = QPushButton("(dis)agreement (MH)")
       self.buttonHistoMixAD.pressed.connect(self.getHistoMixAD)
       self.buttonHistoMixAD.setFont(self.buttonFont)
       self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
-      #self.buttonHistoMixAD.resize(110, 45)
       self.buttonHistoMixAD.setCursor(Qt.PointingHandCursor)
+
+      #Button to show the histogram for the nouns most often referenced with negative terms
+      self.buttonHistoNegative = QPushButton("Negative words")
+      self.buttonHistoNegative.pressed.connect(self.getHistoNegative)
+      self.buttonHistoNegative.setFont(self.buttonFont)
+      self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+      self.buttonHistoNegative.setCursor(Qt.PointingHandCursor)
 
       #Define all the scrollbars we will need
       self.scrollBar1 = QScrollArea()
@@ -202,6 +204,8 @@ class Gui(QMainWindow):
       self.scrollBar5a = QScrollArea()
       self.scrollBar6 = QScrollArea()
       self.scrollBar6a = QScrollArea()
+      self.scrollBar7 = QScrollArea()
+      self.scrollBar7a = QScrollArea()
 
       #Define the layout for menu
       self.menuLayout.addWidget(self.logo)
@@ -228,6 +232,7 @@ class Gui(QMainWindow):
       self.buttonsLayout.addWidget(self.buttonPearson)
       self.buttonsLayout.addWidget(self.buttonHistoSepAD)
       self.buttonsLayout.addWidget(self.buttonHistoMixAD)
+      self.buttonsLayout.addWidget(self.buttonHistoNegative)
 
       #Define the main layout 
       self.page_layout.addStretch()
@@ -283,6 +288,7 @@ class Gui(QMainWindow):
       self.pears2 = QLabel()
       self.histoSepAD = QLabel()
       self.histoMixAD = QLabel()
+      self.histoNegative = QLabel()
       
       #Define layouts for definitions and results
       self.contentLayout1 = QVBoxLayout(self)
@@ -299,6 +305,8 @@ class Gui(QMainWindow):
       self.contentLayout5a = QHBoxLayout(self)
       self.contentLayout6 = QVBoxLayout(self)
       self.contentLayout6a = QHBoxLayout(self)
+      self.contentLayout7 = QVBoxLayout(self)
+      self.contentLayout7a = QHBoxLayout(self)
 
       #if the main layout contains more than 4 layouts (it has results and definitions), delete the results
       if(self.page_layout.count() > 4):
@@ -309,6 +317,7 @@ class Gui(QMainWindow):
          self.deleteContent(self.contentLayout4a)
          self.deleteContent(self.contentLayout5a)
          self.deleteContent(self.contentLayout6a)
+         self.deleteContent(self.contentLayout7a)
 
       #Update the window
       self.repaint()
@@ -335,6 +344,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.deleteLater()
          self.scrollBar6.deleteLater()
          self.scrollBar6a.deleteLater()
+         self.scrollBar7.deleteLater()
+         self.scrollBar7a.deleteLater()
 
       #If one field is missing -> error message
       if query == '' or submission == '' or comments == '':
@@ -356,210 +367,230 @@ class Gui(QMainWindow):
             self.error.setText("You must put at least 6 comments to get good results.")
          else:
             #Get the results of the query
-            try:
-               subColl = SubmissionCollection(submission, comments, query, subReddit)
-               #Get the list of the separated histograms for most frequent words
-               histSep = separateOverlapSubCommentHists(subColl)
+            subColl = SubmissionCollection(submission, comments, query, subReddit)
 
-               #If a message is returned -> error message
-               if histSep == "Not much comments" or histSep == "No comments" or histSep == []:
-                  self.boolError = True
-                  self.error.setText("Not enough comments are available. Please choose another SubReddit or send a new request.")
-               else:
-                  #Define the definition of separated histograms for most frequent words and add it to the main layout
-                  self.histoSep.setText("The separated histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of subplot histogram, one for each comment (5 maximum) of a single submission.<br>")
-                  self.histoSep.setFont(QFont("Calibri", 14))
-                  self.histoSep.setStyleSheet("color:white;")
-                  self.contentLayout1.addWidget(self.histoSep)
-                  self.contentLayout1.setSizeConstraint(3)
-                  self.scrollBar1 = self.scrollAreaToLayout(self.contentLayout1)
-                  self.scrollBar1.setFixedHeight(115)
-                  self.scrollBar1.setDisabled(True)
-                  self.scrollBar1.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar1)
+            #Get the list of the separated histograms for most frequent words
+            histSep = separateOverlapSubCommentHists(subColl)
 
-                  #Get all the separated histograms for most frequent words and add them to the main layout
-                  for fig in histSep:
-                     self.contentLayout1a.addWidget(self.createLabelFromFigure(fig))
-                  self.contentLayout1a.setSizeConstraint(3)
-                  self.scrollBar1a = self.scrollAreaToLayout(self.contentLayout1a)
-                  self.scrollBar1a.setFixedHeight(550)
-                  #If the layout contains less than 3 widgets -> no need of scrollbar
-                  if self.contentLayout1a.count() < 3:
-                     self.scrollBar1a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar1a)
-
-                  #Get the list of the mixed histograms for most frequent words
-                  histMix = mixedOverlapSubCommentHists(subColl)
-
-                  #Define the definition of mixed histograms for most frequent words and add it to the main layout
-                  self.histoMix.setText("The mixed histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of a histogram selecting words of every comment of a single submission.<br>")
-                  self.histoMix.setFont(QFont("Calibri", 14))
-                  self.histoMix.setStyleSheet("color:white;")
-                  self.contentLayout2.addWidget(self.histoMix)
-                  self.contentLayout2.setSizeConstraint(3)
-                  self.scrollBar2 = self.scrollAreaToLayout(self.contentLayout2)
-                  self.scrollBar2.setFixedHeight(115)
-                  self.scrollBar2.setDisabled(True)
-                  self.scrollBar2.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar2)
-
-                  #Get all the mixed histograms for most frequent words and add them to the main layout
-                  for fig in histMix:
-                     self.contentLayout2a.addWidget(self.createLabelFromFigure(fig))
-                  self.contentLayout2a.setSizeConstraint(3)
-                  self.scrollBar2a = self.scrollAreaToLayout(self.contentLayout2a)
-                  self.scrollBar2a.setFixedHeight(550)
-                  #If the layout contains less than 3 widgets -> no need of scrollbar
-                  if self.contentLayout2a.count() < 3:
-                     self.scrollBar2a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar2a)
-
-                  #Get the list of the Jaccard indexes
-                  jaccCoeff = calculateJacquard(subColl)
-
-                  #Define the definition of Jaccard indexes and add it to the main layout
-                  self.jacc.setText("The <b>Jaccard index</b> (or <b>Jaccard similarity coefficient</b>) is a statistic which is used to measure the similarity between 2 samples.<br>For each submission, the Jaccard index is calculated between the 20 most frequent words in the article and its comments.<br>This coefficient is between 0 and 1. The closer it is to 1, the more similar the article and its comments are.<br>")
-                  self.jacc.setFont(QFont("Calibri", 14))
-                  self.jacc.setStyleSheet("color:white;")
-                  self.contentLayout3.addWidget(self.jacc)
-                  self.contentLayout3.setSizeConstraint(3)
-                  self.scrollBar3 = self.scrollAreaToLayout(self.contentLayout3)
-                  self.scrollBar3.setFixedHeight(115)
-                  self.scrollBar3.setDisabled(True)
-                  self.scrollBar3.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3)
-
-                  #Get all the Jaccard indexes and add them to the main layout
-                  for coeff in range(len(jaccCoeff)):
-                     text = "Submission " + str(coeff+1) + ":  " + str(jaccCoeff[coeff])
-                     self.contentLayout3a.addWidget(self.createLabel(text))
-                  self.contentLayout3a.setSizeConstraint(7)
-                  self.scrollBar3a = self.scrollAreaToLayout(self.contentLayout3a)
-                  self.scrollBar3a.setFixedHeight(int(self.size.height()/4.1))
-                  #If the layout contains less than 7 widgets or has 7 widgets -> no need of scrollbar
-                  if self.contentLayout3a.count() <= 7:
-                     self.scrollBar3a.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3a)
-      
-                  #Get the list of the Jaccard indexes with LDA model
-                  jaccLDA = performLDA(subColl)
-
-                  #Define the definition of LDA model and add it to the main layout
-                  self.lda.setText("<b>LDA </b> (or <b>Latent Dirichlet Allocation</b>) is a statistical model for topic modeling methods.<br>The LDA model will define from a document 3 topics each containing 5 frequent words. This model will be repeated on 2 different documents: the article and the set of selected comments.<br>The Jaccard index is computed between the different topics obtained by the LDA model for the article and for the comments.<br>")
-                  self.lda.setFont(QFont("Calibri", 14))
-                  self.lda.setStyleSheet("color:white;")
-                  self.contentLayout3b.addWidget(self.lda)
-                  self.contentLayout3b.setSizeConstraint(3)
-                  self.scrollBar3b = self.scrollAreaToLayout(self.contentLayout3b)
-                  self.scrollBar3b.setFixedHeight(115)
-                  self.scrollBar3b.setDisabled(True)
-                  self.scrollBar3b.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3b)
-
-                  #Get all the Jaccard indexes with LDA model and add them to the main layout
-                  for coeff in range(len(jaccLDA)):
-                     text = "Submission " + str(coeff+1) + ":  " + str(jaccLDA[coeff])
-                     self.contentLayout3c.addWidget(self.createLabel(text))
-                  self.contentLayout3c.setSizeConstraint(7)
-                  self.scrollBar3c = self.scrollAreaToLayout(self.contentLayout3c)
-                  self.scrollBar3c.setFixedHeight(int(self.size.height()/4.1))
-                  #If the layout contains less than 7 widgets or has 7 widgets -> no need of scrollbar
-                  if self.contentLayout3c.count() <= 7:
-                     self.scrollBar3c.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3c)
-
-                  #Get the list of the Pearsion correlations
-                  pearson = pearsonCorrelation(subColl)
-
-                  #Define the definition of Pearson correlation and add it to the main layout
-                  self.pears.setText("The <b>Pearson correlation</b> is a statistical method used to measure the index reflecting a linear relationship between two sets of data. The coefficient is obtained using this formula:")
-                  self.pears.setFont(QFont("Calibri", 14))
-                  self.pears.setStyleSheet("color:white;")
-                  self.pears2.setText("The correlation coefficient varies between -1 and 1. A negative value means that when one variable increases, the other decreases. In contrast, a positive correlation indicates that the two variables vary together in the same direction. Pearson correlations will be calculated between the sentiment associated with the article and that of the selected comments. The results are written in this form: (Pearson correlation coefficient, P-value or the probability of finding the result).")
-                  self.pears2.setFont(QFont("Calibri", 14))
-                  self.pears2.setStyleSheet("color:white;")
-                  self.pears2.setWordWrap(True)
-                  self.contentLayout4.addWidget(self.pears)
-                  self.contentLayout4.addWidget(self.pearsFormula)
-                  self.contentLayout4.addWidget(self.pears2)
-                  self.contentLayout4.setSizeConstraint(6)
-                  self.scrollBar4 = self.scrollAreaToLayout(self.contentLayout4)
-                  self.scrollBar4.setFixedHeight(int(self.size.height()/2.3))
-                  self.scrollBar4.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar4)
-
-                  #Get all the Pearson correlations with LDA model and add them to the main layout
-                  for coeff in range(len(pearson)):
-                     text = "Submission " + str(coeff+1) + ":  " + str(pearson[coeff])
-                     self.contentLayout4a.addWidget(self.createLabel(text))
-                  self.contentLayout4a.setSizeConstraint(8)
-                  self.scrollBar4a = self.scrollAreaToLayout(self.contentLayout4a)
-                  self.scrollBar4a.setFixedHeight(int(self.size.height()/4))
-                  #If the layout contains less than 8 widgets -> no need of scrollbar
-                  if self.contentLayout4a.count() < 8:
-                     self.scrollBar4a.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar4a)
-
-                  #Get the list of the separated histograms for agreement/disagreement
-                  histSepAD = separatedAgreeHists(subColl)
-
-                  #Define the definition of separated histograms for agreement/disagreement and add it to the main layout
-                  self.histoSepAD.setText("The separated histogram shows the agreement and disagreement terms count of a submission's comments.<br>Each graph is composed of a subplot histogram for each comment of a single submission.<br>")
-                  self.histoSepAD.setFont(QFont("Calibri", 14))
-                  self.histoSepAD.setStyleSheet("color:white;")
-                  self.contentLayout5.addWidget(self.histoSepAD)
-                  self.contentLayout5.setSizeConstraint(3)
-                  self.scrollBar5 = self.scrollAreaToLayout(self.contentLayout5)
-                  self.scrollBar5.setFixedHeight(115)
-                  self.scrollBar5.setDisabled(True)
-                  self.scrollBar5.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar5)
-
-                  #Get all the separated histograms for agreement/disagreement and add them to the main layout
-                  for fig in histSepAD:
-                     self.contentLayout5a.addWidget(self.createLabelFromFigure(fig))
-                  self.contentLayout5a.setSizeConstraint(3)
-                  self.scrollBar5a = self.scrollAreaToLayout(self.contentLayout5a)
-                  self.scrollBar5a.setFixedHeight(550)
-                  #If the layout contains less than 3 widgets -> no need of scrollbar
-                  if self.contentLayout5a.count() < 3:
-                     self.scrollBar5a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar5a)
-
-                  #Get the list of the mixed histograms for agreement/disagreement
-                  histMixAD = mixedAgreeHists(subColl)
-
-                  #Define the definition of mixed histograms for agreement/disagreement and add it to the main layout
-                  self.histoMixAD.setText("The mixed histogram shows the agreement and disagreement terms count of a submission's comments.<br>Each graph is composed of a histogram combining words of every comment of a single submission.<br>")
-                  self.histoMixAD.setFont(QFont("Calibri", 14))
-                  self.histoMixAD.setStyleSheet("color:white;")
-                  self.contentLayout6.addWidget(self.histoMixAD)
-                  self.contentLayout6.setSizeConstraint(3)
-                  self.scrollBar6 = self.scrollAreaToLayout(self.contentLayout6)
-                  self.scrollBar6.setFixedHeight(115)
-                  self.scrollBar6.setDisabled(True)
-                  self.scrollBar6.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar6)
-
-                  #Get all the mixed histograms for agreement/disagreement and add them to the main layout
-                  for fig in histMixAD:
-                     self.contentLayout6a.addWidget(self.createLabelFromFigure(fig))
-                  self.contentLayout6a.setSizeConstraint(3)
-                  self.scrollBar6a = self.scrollAreaToLayout(self.contentLayout6a)
-                  self.scrollBar6a.setFixedHeight(550)
-                  #If the layout contains less than 3 widgets -> no need of scrollbar
-                  if self.contentLayout6a.count() < 3:
-                     self.scrollBar6a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
-                  self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar6a)
-                  
-                  #Show the separated histograms
-                  self.getHistoSep()
-
-            #If the research takes too much time (more than 8 minutes) -> error message
-            except RuntimeError:
+            #If a message is returned -> error message
+            if histSep == "Not much comments" or histSep == "No comments" or histSep == []:
                self.boolError = True
-               self.error.setText("Research takes too much time. Please send a new submission.")
+               self.error.setText("Not enough comments are available. Please choose another SubReddit or send a new request.")
+            else:
+               #Define the definition of separated histograms for most frequent words and add it to the main layout
+               self.histoSep.setText("The separated histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of subplot histogram, one for each comment (5 maximum) of a single submission.<br>")
+               self.histoSep.setFont(QFont("Calibri", 14))
+               self.histoSep.setStyleSheet("color:white;")
+               self.contentLayout1.addWidget(self.histoSep)
+               self.contentLayout1.setSizeConstraint(3)
+               self.scrollBar1 = self.scrollAreaToLayout(self.contentLayout1)
+               self.scrollBar1.setFixedHeight(115)
+               self.scrollBar1.setDisabled(True)
+               self.scrollBar1.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar1)
+
+               #Get all the separated histograms for most frequent words and add them to the main layout
+               for fig in histSep:
+                  self.contentLayout1a.addWidget(self.createLabelFromFigure(fig))
+               self.contentLayout1a.setSizeConstraint(3)
+               self.scrollBar1a = self.scrollAreaToLayout(self.contentLayout1a)
+               self.scrollBar1a.setFixedHeight(550)
+               #If the layout contains less than 3 widgets -> no need of scrollbar
+               if self.contentLayout1a.count() < 3:
+                  self.scrollBar1a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar1a)
+
+               #Get the list of the mixed histograms for most frequent words
+               histMix = mixedOverlapSubCommentHists(subColl)
+
+               #Define the definition of mixed histograms for most frequent words and add it to the main layout
+               self.histoMix.setText("The mixed histograms display the most popular word occurrences of a submission's article and comments.<br>Each graph is composed of a histogram selecting words of every comment of a single submission.<br>")
+               self.histoMix.setFont(QFont("Calibri", 14))
+               self.histoMix.setStyleSheet("color:white;")
+               self.contentLayout2.addWidget(self.histoMix)
+               self.contentLayout2.setSizeConstraint(3)
+               self.scrollBar2 = self.scrollAreaToLayout(self.contentLayout2)
+               self.scrollBar2.setFixedHeight(115)
+               self.scrollBar2.setDisabled(True)
+               self.scrollBar2.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar2)
+
+               #Get all the mixed histograms for most frequent words and add them to the main layout
+               for fig in histMix:
+                  self.contentLayout2a.addWidget(self.createLabelFromFigure(fig))
+               self.contentLayout2a.setSizeConstraint(3)
+               self.scrollBar2a = self.scrollAreaToLayout(self.contentLayout2a)
+               self.scrollBar2a.setFixedHeight(550)
+               #If the layout contains less than 3 widgets -> no need of scrollbar
+               if self.contentLayout2a.count() < 3:
+                  self.scrollBar2a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar2a)
+
+               #Get the list of the Jaccard indexes
+               jaccCoeff = calculateJacquard(subColl)
+
+               #Define the definition of Jaccard indexes and add it to the main layout
+               self.jacc.setText("The <b>Jaccard index</b> (or <b>Jaccard similarity coefficient</b>) is a statistic which is used to measure the similarity between 2 samples.<br>For each submission, the Jaccard index is calculated between the 20 most frequent words in the article and its comments.<br>This coefficient is between 0 and 1. The closer it is to 1, the more similar the article and its comments are.<br>")
+               self.jacc.setFont(QFont("Calibri", 14))
+               self.jacc.setStyleSheet("color:white;")
+               self.contentLayout3.addWidget(self.jacc)
+               self.contentLayout3.setSizeConstraint(3)
+               self.scrollBar3 = self.scrollAreaToLayout(self.contentLayout3)
+               self.scrollBar3.setFixedHeight(115)
+               self.scrollBar3.setDisabled(True)
+               self.scrollBar3.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3)
+
+               #Get all the Jaccard indexes and add them to the main layout
+               for coeff in range(len(jaccCoeff)):
+                  text = "Submission " + str(coeff+1) + ":  " + str(jaccCoeff[coeff])
+                  self.contentLayout3a.addWidget(self.createLabel(text))
+               self.contentLayout3a.setSizeConstraint(7)
+               self.scrollBar3a = self.scrollAreaToLayout(self.contentLayout3a)
+               self.scrollBar3a.setFixedHeight(int(self.size.height()/4.1))
+               #If the layout contains less than 7 widgets or has 7 widgets -> no need of scrollbar
+               if self.contentLayout3a.count() <= 7:
+                  self.scrollBar3a.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3a)
+   
+               #Get the list of the Jaccard indexes with LDA model
+               jaccLDA = performLDA(subColl)
+
+               #Define the definition of LDA model and add it to the main layout
+               self.lda.setText("<b>LDA </b> (or <b>Latent Dirichlet Allocation</b>) is a statistical model for topic modeling methods.<br>The LDA model will define from a document 3 topics each containing 5 frequent words. This model will be repeated on 2 different documents: the article and the set of selected comments.<br>The Jaccard index is computed between the different topics obtained by the LDA model for the article and for the comments.<br>")
+               self.lda.setFont(QFont("Calibri", 14))
+               self.lda.setStyleSheet("color:white;")
+               self.contentLayout3b.addWidget(self.lda)
+               self.contentLayout3b.setSizeConstraint(3)
+               self.scrollBar3b = self.scrollAreaToLayout(self.contentLayout3b)
+               self.scrollBar3b.setFixedHeight(115)
+               self.scrollBar3b.setDisabled(True)
+               self.scrollBar3b.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3b)
+
+               #Get all the Jaccard indexes with LDA model and add them to the main layout
+               for coeff in range(len(jaccLDA)):
+                  text = "Submission " + str(coeff+1) + ":  " + str(jaccLDA[coeff])
+                  self.contentLayout3c.addWidget(self.createLabel(text))
+               self.contentLayout3c.setSizeConstraint(7)
+               self.scrollBar3c = self.scrollAreaToLayout(self.contentLayout3c)
+               self.scrollBar3c.setFixedHeight(int(self.size.height()/4.1))
+               #If the layout contains less than 7 widgets or has 7 widgets -> no need of scrollbar
+               if self.contentLayout3c.count() <= 7:
+                  self.scrollBar3c.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar3c)
+
+               #Get the list of the Pearsion correlations
+               pearson = pearsonCorrelation(subColl)
+
+               #Define the definition of Pearson correlation and add it to the main layout
+               self.pears.setText("The <b>Pearson correlation</b> is a statistical method used to measure the index reflecting a linear relationship between two sets of data. The coefficient is obtained using this formula:")
+               self.pears.setFont(QFont("Calibri", 14))
+               self.pears.setStyleSheet("color:white;")
+               self.pears2.setText("The correlation coefficient varies between -1 and 1. A negative value means that when one variable increases, the other decreases. In contrast, a positive correlation indicates that the two variables vary together in the same direction. Pearson correlations will be calculated between the sentiment associated with the article and that of the selected comments. The results are written in this form: (Pearson correlation coefficient, P-value or the probability of finding the result).")
+               self.pears2.setFont(QFont("Calibri", 14))
+               self.pears2.setStyleSheet("color:white;")
+               self.pears2.setWordWrap(True)
+               self.contentLayout4.addWidget(self.pears)
+               self.contentLayout4.addWidget(self.pearsFormula)
+               self.contentLayout4.addWidget(self.pears2)
+               self.contentLayout4.setSizeConstraint(6)
+               self.scrollBar4 = self.scrollAreaToLayout(self.contentLayout4)
+               self.scrollBar4.setFixedHeight(int(self.size.height()/2.3))
+               self.scrollBar4.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar4)
+
+               #Get all the Pearson correlations with LDA model and add them to the main layout
+               for coeff in range(len(pearson)):
+                  text = "Submission " + str(coeff+1) + ":  " + str(pearson[coeff])
+                  self.contentLayout4a.addWidget(self.createLabel(text))
+               self.contentLayout4a.setSizeConstraint(8)
+               self.scrollBar4a = self.scrollAreaToLayout(self.contentLayout4a)
+               self.scrollBar4a.setFixedHeight(int(self.size.height()/4))
+               #If the layout contains less than 8 widgets -> no need of scrollbar
+               if self.contentLayout4a.count() < 8:
+                  self.scrollBar4a.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar4a)
+
+               #Get the list of the separated histograms for agreement/disagreement
+               histSepAD = separatedAgreeHists(subColl)
+
+               #Define the definition of separated histograms for agreement/disagreement and add it to the main layout
+               self.histoSepAD.setText("The separated histogram shows the agreement and disagreement terms count of a submission's comments.<br>Each graph is composed of a subplot histogram for each comment of a single submission.<br>")
+               self.histoSepAD.setFont(QFont("Calibri", 14))
+               self.histoSepAD.setStyleSheet("color:white;")
+               self.contentLayout5.addWidget(self.histoSepAD)
+               self.contentLayout5.setSizeConstraint(3)
+               self.scrollBar5 = self.scrollAreaToLayout(self.contentLayout5)
+               self.scrollBar5.setFixedHeight(115)
+               self.scrollBar5.setDisabled(True)
+               self.scrollBar5.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar5)
+
+               #Get all the separated histograms for agreement/disagreement and add them to the main layout
+               for fig in histSepAD:
+                  self.contentLayout5a.addWidget(self.createLabelFromFigure(fig))
+               self.contentLayout5a.setSizeConstraint(3)
+               self.scrollBar5a = self.scrollAreaToLayout(self.contentLayout5a)
+               self.scrollBar5a.setFixedHeight(550)
+               #If the layout contains less than 3 widgets -> no need of scrollbar
+               if self.contentLayout5a.count() < 3:
+                  self.scrollBar5a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar5a)
+
+               #Get the list of the mixed histograms for agreement/disagreement
+               histMixAD = mixedAgreeHists(subColl)
+
+               #Define the definition of mixed histograms for agreement/disagreement and add it to the main layout
+               self.histoMixAD.setText("The mixed histogram shows the agreement and disagreement terms count of a submission's comments.<br>Each graph is composed of a histogram combining words of every comment of a single submission.<br>")
+               self.histoMixAD.setFont(QFont("Calibri", 14))
+               self.histoMixAD.setStyleSheet("color:white;")
+               self.contentLayout6.addWidget(self.histoMixAD)
+               self.contentLayout6.setSizeConstraint(3)
+               self.scrollBar6 = self.scrollAreaToLayout(self.contentLayout6)
+               self.scrollBar6.setFixedHeight(115)
+               self.scrollBar6.setDisabled(True)
+               self.scrollBar6.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar6)
+
+               #Get all the mixed histograms for agreement/disagreement and add them to the main layout
+               for fig in histMixAD:
+                  self.contentLayout6a.addWidget(self.createLabelFromFigure(fig))
+               self.contentLayout6a.setSizeConstraint(3)
+               self.scrollBar6a = self.scrollAreaToLayout(self.contentLayout6a)
+               self.scrollBar6a.setFixedHeight(550)
+               #If the layout contains less than 3 widgets -> no need of scrollbar
+               if self.contentLayout6a.count() < 3:
+                  self.scrollBar6a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar6a)
+               
+               #Get the histogram for the nouns related to the negative terms
+               histNegative = negative_entities(subColl)
+
+               #Define the definition of histogram for the nouns related to the negative terms and add it to the main layout
+               self.histoNegative.setText("The histogram shows the nouns most often referenced with negative terms in all comments for all the submissions.<br>")
+               self.histoNegative.setFont(QFont("Calibri", 14))
+               self.histoNegative.setStyleSheet("color:white;")
+               self.contentLayout7.addWidget(self.histoNegative)
+               self.contentLayout7.setSizeConstraint(3)
+               self.scrollBar7 = self.scrollAreaToLayout(self.contentLayout7)
+               self.scrollBar7.setFixedHeight(115)
+               self.scrollBar7.setDisabled(True)
+               self.scrollBar7.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar7)
+
+               #Add the histogram for the nouns related to the negative terms to the main layout
+               self.contentLayout7a.addWidget(self.createLabelFromFigure(histNegative))
+               self.contentLayout7a.setSizeConstraint(3)
+               self.scrollBar7a = self.scrollAreaToLayout(self.contentLayout7a)
+               self.scrollBar7a.setFixedHeight(550)
+               #If the layout contains less than 3 widgets -> no need of scrollbar
+               if self.contentLayout7a.count() < 3:
+                  self.scrollBar7a.horizontalScrollBar().setStyleSheet("QScrollBar {height:0px;}")
+               self.page_layout.insertWidget(self.page_layout.count()-1, self.scrollBar7a)
+
+               #Show the separated histograms
+               self.getHistoSep()
                
       #Restore the cursor -> time to processing is finished
       QApplication.restoreOverrideCursor()
@@ -578,6 +609,7 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       #Else, remove the processing message
       else:
          self.error.setText("")
@@ -665,6 +697,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
@@ -673,16 +707,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the mixed histograms for most frequent words
    def getHistoMix(self):
@@ -702,6 +736,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -710,16 +746,17 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
 
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
+         #self.repaint()
 
    #Show the Jaccard indexes
    def getJaccardIndex(self):
@@ -739,6 +776,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -747,16 +786,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the Pearson correlations
    def getPearsonCorrelation(self):
@@ -776,6 +815,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -784,16 +825,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
 
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the separated histograms for agreement/disagreement
    def getHistoSepAD(self):
@@ -813,6 +854,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.show()
          self.scrollBar6.hide()
          self.scrollBar6a.hide()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -821,16 +864,16 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
       
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Show the mixed histograms for most frequent words
    def getHistoMixAD(self):
@@ -850,6 +893,8 @@ class Gui(QMainWindow):
          self.scrollBar5a.hide()
          self.scrollBar6.show()
          self.scrollBar6a.show()
+         self.scrollBar7.hide()
+         self.scrollBar7a.hide()
 
          #Show the current tab
          self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
@@ -858,16 +903,56 @@ class Gui(QMainWindow):
          self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
          self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
 
       #Else -> error message
       else: 
          self.error.setText("Please send a submission.")
-         self.widthError = self.error.fontMetrics().boundingRect(self.error.text()).width()
-         self.error.setFixedSize(self.widthError + 40, 30)
+         self.error.setFixedSize(265 + 40, 30)
          self.error.setAlignment(Qt.AlignCenter)
          self.error.setFont(QFont("Calibri", 14))
          self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
-         self.error.move(int(self.size.width()/2 - self.widthError/2), int(self.size.height()/10))
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
+
+   #TODO
+   #Show the mixed histograms for most frequent words
+   def getHistoNegative(self):
+      #If the user send a query without error -> show the mixed histograms and the definition of mixed histograms
+      if self.isSubmit == True and self.boolError == False:
+         self.scrollBar1.hide()
+         self.scrollBar1a.hide()
+         self.scrollBar2.hide()
+         self.scrollBar2a.hide()
+         self.scrollBar3.hide()
+         self.scrollBar3a.hide()
+         self.scrollBar3b.hide()
+         self.scrollBar3c.hide()
+         self.scrollBar4.hide()
+         self.scrollBar4a.hide()
+         self.scrollBar5.hide()
+         self.scrollBar5a.hide()
+         self.scrollBar6.hide()
+         self.scrollBar6a.hide()
+         self.scrollBar7.show()
+         self.scrollBar7a.show()
+
+         #Show the current tab
+         self.buttonHistoSep.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoMix.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonJaccard.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonPearson.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoSepAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoMixAD.setStyleSheet("color:white;background-color:#3b3b45;border-radius:4px;")
+         self.buttonHistoNegative.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
+
+      #Else -> error message
+      else: 
+         self.error.setText("Please send a submission.")
+         self.error.setFixedSize(265 + 40, 30)
+         self.error.setAlignment(Qt.AlignCenter)
+         self.error.setFont(QFont("Calibri", 14))
+         self.error.setStyleSheet("color:white;background-color:#ff4500;border-radius:4px;")
+         self.error.move(int(self.size.width()/2 - 265/2), int(self.size.height()/10))
 
    #Function to delete the content of a layout
    def deleteContent(self, layout):

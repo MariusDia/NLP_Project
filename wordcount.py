@@ -90,10 +90,10 @@ def getSubCommentsWordCounting(subColl, subNum, wordLimit=10):
     wordLimit : int, optional
         Number limit of words (the 'wordLimit' most common word) . The default is 10.
 
-    Returns a list of
+    Returns a list of  dictionaries of the "wordLimit" most common words of every chosen comments of a submission.
     -------
     comWordCountList : list
-        List of dictionaries of the "wordLimit" most common words of every chosen comments of a submission.
+        List of dictionaries of the "wordLimit" most common words of chosen comments of a submission.
 
     '''
 
@@ -107,7 +107,6 @@ def getSubCommentsWordCounting(subColl, subNum, wordLimit=10):
 def getMergedComWordCount(subColl, subNum, wordLimit=20):
     '''
     
-
     Parameters
     ----------
     subColl : SubmissionCollection
@@ -117,10 +116,10 @@ def getMergedComWordCount(subColl, subNum, wordLimit=20):
     wordLimit : int, optional
         Number limit of words (the 'wordLimit' most common word) . The default is 20.
 
-    Returns
+    Returns a dictionary of the "wordLimit" most common words of every chosen comments combined of a submission.
     -------
-    mergedComWordCount : TYPE
-        DESCRIPTION.
+    mergedComWordCount : dict
+        A dictionary of the "wordLimit" most common words of every chosen comments combined of a submission..
 
     '''
     mergedComWordCount = {}
@@ -165,7 +164,6 @@ def calculateJacquard(subColl):
 
 def jacquardCoeff(l1, l2):
     '''
-
 
     Parameters
     ----------

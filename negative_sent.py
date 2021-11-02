@@ -8,9 +8,9 @@ import spacy
 from spacy.symbols import *
 
 def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
-    # nltk.download('averaged_perceptron_tagger')
-    # nltk.download('maxent_ne_chunker')
-    # nltk.download('words')
+    #nltk.download('averaged_perceptron_tagger')
+    #nltk.download('maxent_ne_chunker')
+    #nltk.download('words')
     # list of negative words
     doc = pd.read_csv(lexicon, sep='\t', names=['token', 'mn', 'std', 'raw'])
     negative_list = doc[doc['mn'] < -0.5]['token'].tolist()
@@ -37,7 +37,7 @@ def negative_entities(subColl, lexicon="lexicons/vader_lexicon.txt"):
                            title="histogram of the 10 most mentioned entities"
                            , x='entity name'
                            , y='count'
-                           , rot=0
+                           , rot=30
                            , legend=True)
     print(df.head(10))
     return fig.get_figure()
