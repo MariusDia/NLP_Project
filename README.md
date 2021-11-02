@@ -17,3 +17,6 @@
 7.	We now would like to investigate the behavior of users who make comments on the original document. For this purpose, elaborate a list of your own for agreement act (e.g., agree, OK, sure, right…) and another list of disagreement, and draw a histogram of agreement act and disagreement (just by counting number of agreement act related words and number of disagreement act related words). 
 
 8.	Design and implement a simple GUI interface that would allow you to demonstrate and exemplify your reasoning.
+
+
+To run the project, you must clone the git repository, install all the libraries needed (specified in Appendix in the report) and be sure that Java is installed. Then, you can open "gui.py" in an ide and execute it.
