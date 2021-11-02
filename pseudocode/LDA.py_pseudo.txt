@@ -26,7 +26,7 @@ FUNCTION performLDA(subColl, NUM_TOPICS=3):
 
         FOR topic IN article_topics:
 
-            article_topic_words = article_topic_words.union(set([t[0] FOR t IN topic[1]])) ???
+            article_topic_words = SET OF ALL THE WORDS WHICH COMPOSED THE TOPIC IN THE ARTICLE
 
         comments_text_data = LIST OF TOKENIZED WORDS FROM sub.comments_doc (preProcess[1])
 
@@ -44,7 +44,7 @@ FUNCTION performLDA(subColl, NUM_TOPICS=3):
 
         FOR topic IN comments_topics:
 
-            comments_topic_words = comments_topic_words.union(set([t[0] FOR t IN topic[1]])) ???
+            comments_topic_words = SET OF ALL THE WORDS WHICH COMPOSED THE TOPIC IN THE COMMENTS
 
         PRINT article_topic_words
         PRINT comments_topic_words
