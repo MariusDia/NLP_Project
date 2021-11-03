@@ -18,7 +18,7 @@ FUNCTION performLDA(subColl, NUM_TOPICS=3):
         FOR text IN article_text_data:
             ADD (LIST OF 2-TUPLES (token_id, token_count) FROM text) TO corpus (dictionary.doc2bow)
 
-        ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=NUM_TOPICS, id2word=dictionary, passes=15) ???
+        ldamodel = INITIALIZE LDA MODEL INSTANCE FROM corpus (id2word=dictionarygensim.models.ldamodel.LdaModel)
 
         article_topics = 5 MOST SIGNIFICANT WORDS FROM ldamodel (ldamodel.show_topics)
 
@@ -26,7 +26,7 @@ FUNCTION performLDA(subColl, NUM_TOPICS=3):
 
         FOR topic IN article_topics:
 
-            article_topic_words = article_topic_words.union(set([t[0] FOR t IN topic[1]])) ???
+            article_topic_words = SET OF ALL THE WORDS WHICH COMPOSED THE TOPIC IN THE ARTICLE
 
         comments_text_data = LIST OF TOKENIZED WORDS FROM sub.comments_doc (preProcess[1])
 
@@ -44,7 +44,7 @@ FUNCTION performLDA(subColl, NUM_TOPICS=3):
 
         FOR topic IN comments_topics:
 
-            comments_topic_words = comments_topic_words.union(set([t[0] FOR t IN topic[1]])) ???
+            comments_topic_words = SET OF ALL THE WORDS WHICH COMPOSED THE TOPIC IN THE COMMENTS
 
         PRINT article_topic_words
         PRINT comments_topic_words
