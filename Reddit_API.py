@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+
+"""
+This file was mostly used for debugging
+"""
 import time
 
 from class_architecture import SubmissionCollection
@@ -11,6 +15,7 @@ from histograms import separateOverlapSubCommentHists
 from histograms import mixedOverlapSubCommentHists
 from negative_sent import negative_entities
 from LDA import performLDA
+import os
 
 
 def main():
@@ -94,27 +99,11 @@ def main():
 
 subLimit=4
 comLimit=20
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 query="industrial farming"
 subReddit="news"
 print("Processing submission collection... \n\n")
 subColl = SubmissionCollection(subLimit, comLimit, query, subReddit)
 print('negative entities')
-negative_entities(subColl)
-"""
-
-print('pearson')
-print(pearsonCorrelation(subColl))
-#print("Drawing separate histogram")
-#separateOverlapSubCommentHists(subColl)
-#print("Drawing mixed histogram\n\n")
-#mixedOverlapSubCommentHists(subColl)
-
-'''print("Jaccard index :\n\n")
-print(calculateJacquard(subColl))
-
-print("LDA model\n\n")
-print(performLDA(subColl, 3))
-
-print("Pearson\n\n")
-print(pearsonCorrelation(subColl))'''
-"""
+performLDA(subColl)

@@ -12,9 +12,11 @@ from agreement_histograms import mixedAgreeHists, separatedAgreeHists
 from negative_sent import negative_entities
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
+import os
 class Gui(QMainWindow):
    def __init__(self):
+      """uncomment in case of library issues """
+      #os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
       super().__init__()
 
       #Title of the main window
